@@ -184,7 +184,17 @@ function dealHand(shoe){
 
 /* ---------- sound (Web Audio, synthesized) ---------- */
 const SFX=(()=>{
-  let ctx=null,master=null,noiseBuf=null,crowd=null,muted=false,silentEl=null;
+  let ctx=null,master=null,noiseBuf=null,crowd=null,muted=false,silentEl=null,verb=null,verbIn=null;
+  const out=(node)=>{node.connect(master);if(verbIn)node.connect(verbIn)};
+  /* one crowd "voice": sawtooth with vibrato through vowel formant filters */
+  function voice(t,{f,glide=1.1,a=0.1,hold=0.5,rel=0.6,gain=0.01,F1=720,F2=1200,bright=0.15}){
+    const o=ctx.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(f,t);o.frequency.linearRampToValueAtTime(f*glide,t+a+0.12);o.frequency.linearRampToValueAtTime(f*glide*0.96,t+a+hold+rel);
+    const vib=ctx.createOscillator();vib.frequency.value=4.5+Math.random()*2.5;const vg=ctx.createGain();vg.gain.value=f*0.02;vib.connect(vg);vg.connect(o.frequency);
+    const mix=ctx.createGain();mix.gain.value=1;
+    for(const [fr,q,g] of [[F1,6,1],[F2,8,0.55],[2600,9,bright]]){const b=ctx.createBiquadFilter();b.type='bandpass';b.frequency.value=fr*(0.94+Math.random()*0.12);b.Q.value=q;const bg=ctx.createGain();bg.gain.value=g;o.connect(b);b.connect(bg);bg.connect(mix)}
+    const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t);gn.gain.linearRampToValueAtTime(gain,t+a);gn.gain.setValueAtTime(gain,t+a+hold);gn.gain.exponentialRampToValueAtTime(0.0001,t+a+hold+rel);
+    mix.connect(gn);out(gn);o.start(t);vib.start(t);const end=t+a+hold+rel+0.05;o.stop(end);vib.stop(end);
+  }
   try{muted=localStorage.getItem('ccb-muted')==='1'}catch(e){}
   function silentWav(){const sr=8000,n=800,buf=new ArrayBuffer(44+n),v=new DataView(buf);const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
     w(0,'RIFF');v.setUint32(4,36+n,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr,true);v.setUint16(32,1,true);v.setUint16(34,8,true);w(36,'data');v.setUint32(40,n,true);for(let i=0;i<n;i++)v.setUint8(44+i,128);
@@ -201,6 +211,9 @@ const SFX=(()=>{
     if(ctx.state!=='running'){try{ctx.resume()}catch(e){}}
     keepAlive();
     const comp=ctx.createDynamicsCompressor();comp.threshold.value=-12;comp.ratio.value=4;master.connect(comp);comp.connect(ctx.destination);
+    /* small hall reverb for crowd sounds: decaying noise impulse */
+    try{const il=Math.round(ctx.sampleRate*1.8),ib=ctx.createBuffer(2,il,ctx.sampleRate);for(let ch=0;ch<2;ch++){const d=ib.getChannelData(ch);for(let i=0;i<il;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/il,3.2)*0.6}
+      verb=ctx.createConvolver();verb.buffer=ib;verbIn=ctx.createGain();verbIn.gain.value=0.9;const vo=ctx.createGain();vo.gain.value=0.45;verbIn.connect(verb);verb.connect(vo);vo.connect(master)}catch(e){verbIn=null}
     const len=ctx.sampleRate*2;noiseBuf=ctx.createBuffer(1,len,ctx.sampleRate);const d=noiseBuf.getChannelData(0);let b0=0,b1=0,b2=0;
     for(let i=0;i<len;i++){const w=Math.random()*2-1;b0=0.99765*b0+w*0.099;b1=0.963*b1+w*0.2965;b2=0.57*b2+w*1.0526;d[i]=(b0+b1+b2+w*0.1848)*0.22}
     return ctx;
@@ -235,20 +248,24 @@ const SFX=(()=>{
       const lfo=ctx.createOscillator();lfo.frequency.value=0.35;const lg=ctx.createGain();lg.gain.value=0.025;lfo.connect(lg);lg.connect(gn.gain);lfo.start(t);
       src.connect(flt);flt.connect(gn);gn.connect(master);src.start(t);crowd={src,gn,lfo}},
     crowdOff(){if(!crowd)return;const t=now(),c=crowd;crowd=null;c.gn.gain.setTargetAtTime(0.0001,t,0.4);c.src.stop(t+2);c.lfo.stop(t+2)},
-    cheer(){if(!ready())return;const t=now();
-      const src=ctx.createBufferSource();src.buffer=noiseBuf;src.loop=true;const flt=ctx.createBiquadFilter();flt.type='bandpass';flt.frequency.value=1000;flt.Q.value=0.7;
-      const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t);gn.gain.linearRampToValueAtTime(0.17,t+0.3);gn.gain.setValueAtTime(0.17,t+0.8);gn.gain.exponentialRampToValueAtTime(0.0001,t+2.0);
-      const lfo=ctx.createOscillator();lfo.type='triangle';lfo.frequency.value=8;const lg=ctx.createGain();lg.gain.value=0.08;lfo.connect(lg);lg.connect(gn.gain);lfo.start(t);lfo.stop(t+2.3);
-      src.connect(flt);flt.connect(gn);gn.connect(master);src.start(t);src.stop(t+2.3);
-      for(let i=0;i<10;i++)noise(t+0.2+Math.random()*1.3,{type:'bandpass',f:1800+Math.random()*1500,q:4,a:0.004,dec:0.06,gain:0.06})},
+    cheer(){if(!ready())return;const t=now()+0.1;
+      /* a stand of people: "yeah!" voices with a quick upward pitch jump, staggered, plus claps and a couple of whistles */
+      for(let i=0;i<18;i++){const fem=Math.random()<0.45;const f=fem?250+Math.random()*170:140+Math.random()*110;
+        voice(t+Math.random()*0.35,{f,glide:1.1+Math.random()*0.12,a:0.05+Math.random()*0.12,hold:0.35+Math.random()*0.5,rel:0.5+Math.random()*0.6,gain:fem?0.009:0.011,F1:fem?800:680,F2:fem?1300:1150,bright:0.2})}
+      for(let i=0;i<26;i++){const d=Math.random();noise(t+0.15+d*d*1.7,{type:'bandpass',f:2300+Math.random()*1400,q:5,a:0.003,dec:0.035,gain:0.05})}
+      for(let i=0;i<2;i++){const s=t+0.3+Math.random()*0.5,f=2300+Math.random()*500;tone(s,{f,f2:f*1.25,type:'sine',a:0.08,dec:0.3,gain:0.02})}},
     ooh(level){if(!ready())return;const t=now(),L=level||1;
-      /* crowd "oooh": filtered murmur swelling with a vowel-like formant plus a few detuned low voices */
-      for(const [f,q,gain] of [[320,5,0.16],[620,6,0.07],[180,3,0.06]]){const src=ctx.createBufferSource();src.buffer=noiseBuf;src.loop=true;const flt=ctx.createBiquadFilter();flt.type='bandpass';flt.frequency.setValueAtTime(f,t);flt.frequency.linearRampToValueAtTime(f*1.12,t+0.9);flt.Q.value=q;
-        const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t);gn.gain.linearRampToValueAtTime(gain*L,t+0.45);gn.gain.setValueAtTime(gain*L,t+0.9);gn.gain.exponentialRampToValueAtTime(0.0001,t+1.7);src.connect(flt);flt.connect(gn);gn.connect(master);src.start(t);src.stop(t+1.8)}
-      for(const f of [146,149,196,199,220]){const o=ctx.createOscillator();o.type='triangle';o.frequency.setValueAtTime(f,t);o.frequency.linearRampToValueAtTime(f*1.08,t+0.9);const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=600;
-        const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t);gn.gain.linearRampToValueAtTime(0.022*L,t+0.5);gn.gain.setValueAtTime(0.022*L,t+0.9);gn.gain.exponentialRampToValueAtTime(0.0001,t+1.6);o.connect(lp);lp.connect(gn);gn.connect(master);o.start(t);o.stop(t+1.7)}},
+      /* crowd "oooh" of suspense: rounded vowel, slow swell, slight rise */
+      for(let i=0;i<14;i++){const fem=Math.random()<0.4;const f=fem?230+Math.random()*120:120+Math.random()*90;
+        voice(t+Math.random()*0.25,{f,glide:1.06,a:0.35+Math.random()*0.2,hold:0.5+Math.random()*0.3,rel:0.6+Math.random()*0.4,gain:(fem?0.006:0.008)*L,F1:330,F2:850,bright:0.04})}},
     applause(){if(!ready())return;const t=now();for(let i=0;i<22;i++)noise(t+0.1+i*0.055+Math.random()*0.03,{type:'bandpass',f:1600+Math.random()*1800,q:3,a:0.003,dec:0.05,gain:0.1})},
-    groan(){if(!ready())return;const t=now();tone(t,{f:240,f2:150,type:'sawtooth',a:0.08,dec:0.6,gain:0.05});tone(t+0.02,{f:180,f2:120,type:'triangle',a:0.1,dec:0.7,gain:0.08});noise(t,{type:'lowpass',f:500,a:0.1,dec:0.7,gain:0.14})},
+    groan(){if(!ready())return;const t=now();
+      /* the ball flies past: a wind fly-by, rising then falling like a doppler, plus a faint crowd sigh */
+      const src=ctx.createBufferSource();src.buffer=noiseBuf;src.loop=true;src.playbackRate.value=1.3;const flt=ctx.createBiquadFilter();flt.type='bandpass';flt.Q.value=1.1;
+      flt.frequency.setValueAtTime(380,t);flt.frequency.exponentialRampToValueAtTime(2400,t+0.28);flt.frequency.exponentialRampToValueAtTime(420,t+0.95);
+      const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t);gn.gain.linearRampToValueAtTime(0.22,t+0.26);gn.gain.exponentialRampToValueAtTime(0.0001,t+1.0);src.connect(flt);flt.connect(gn);gn.connect(master);src.start(t);src.stop(t+1.1);
+      tone(t+0.05,{f:1100,f2:420,type:'sine',a:0.1,dec:0.6,gain:0.025});
+      for(let i=0;i<6;i++){const f=130+Math.random()*120;voice(t+0.35+Math.random()*0.2,{f,glide:0.9,a:0.25,hold:0.25,rel:0.6,gain:0.004,F1:600,F2:1000,bright:0.02})}},
     win(){if(!ready())return;const t=now()+0.25;
       tone(t,{f:110,f2:170,type:'sine',a:0.01,dec:0.28,gain:0.16});
       tone(t+0.04,{f:784,type:'sine',a:0.006,dec:0.32,gain:0.13});tone(t+0.04,{f:1568,type:'sine',a:0.006,dec:0.14,gain:0.03});
