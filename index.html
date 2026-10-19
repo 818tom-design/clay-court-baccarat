@@ -231,16 +231,22 @@ const SFX=(()=>{
       for(let i=0;i<5;i++)noise(t+0.05+i*0.045,{type:'bandpass',f:2500,q:3,a:0.001,dec:0.02,gain:0.12-i*0.02})},
     chip(){if(!ready())return;const t=now();tone(t,{f:2600,f2:1800,a:0.001,dec:0.04,gain:0.18});noise(t,{type:'highpass',f:4000,a:0.001,dec:0.03,gain:0.2});tone(t+0.06,{f:3100,f2:2200,a:0.001,dec:0.035,gain:0.12})},
     crowdOn(){if(!ready()||crowd)return;const t=now();const src=ctx.createBufferSource();src.buffer=noiseBuf;src.loop=true;
-      const flt=ctx.createBiquadFilter();flt.type='lowpass';flt.frequency.value=420;const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t);gn.gain.exponentialRampToValueAtTime(0.09,t+0.8);
+      const flt=ctx.createBiquadFilter();flt.type='lowpass';flt.frequency.value=420;const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t);gn.gain.exponentialRampToValueAtTime(0.12,t+0.8);
       const lfo=ctx.createOscillator();lfo.frequency.value=0.35;const lg=ctx.createGain();lg.gain.value=0.025;lfo.connect(lg);lg.connect(gn.gain);lfo.start(t);
       src.connect(flt);flt.connect(gn);gn.connect(master);src.start(t);crowd={src,gn,lfo}},
     crowdOff(){if(!crowd)return;const t=now(),c=crowd;crowd=null;c.gn.gain.setTargetAtTime(0.0001,t,0.4);c.src.stop(t+2);c.lfo.stop(t+2)},
     cheer(){if(!ready())return;const t=now();
-      const src=ctx.createBufferSource();src.buffer=noiseBuf;src.loop=true;const flt=ctx.createBiquadFilter();flt.type='bandpass';flt.frequency.value=1100;flt.Q.value=0.6;
-      const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t);gn.gain.linearRampToValueAtTime(0.34,t+0.25);gn.gain.setValueAtTime(0.34,t+0.7);gn.gain.exponentialRampToValueAtTime(0.0001,t+1.8);
-      const lfo=ctx.createOscillator();lfo.type='triangle';lfo.frequency.value=9;const lg=ctx.createGain();lg.gain.value=0.18;lfo.connect(lg);lg.connect(gn.gain);lfo.start(t);lfo.stop(t+2.3);
+      const src=ctx.createBufferSource();src.buffer=noiseBuf;src.loop=true;const flt=ctx.createBiquadFilter();flt.type='bandpass';flt.frequency.value=1000;flt.Q.value=0.7;
+      const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t);gn.gain.linearRampToValueAtTime(0.17,t+0.3);gn.gain.setValueAtTime(0.17,t+0.8);gn.gain.exponentialRampToValueAtTime(0.0001,t+2.0);
+      const lfo=ctx.createOscillator();lfo.type='triangle';lfo.frequency.value=8;const lg=ctx.createGain();lg.gain.value=0.08;lfo.connect(lg);lg.connect(gn.gain);lfo.start(t);lfo.stop(t+2.3);
       src.connect(flt);flt.connect(gn);gn.connect(master);src.start(t);src.stop(t+2.3);
-      for(let i=0;i<14;i++)noise(t+0.15+Math.random()*1.4,{type:'bandpass',f:1800+Math.random()*1500,q:4,a:0.004,dec:0.06,gain:0.14})},
+      for(let i=0;i<10;i++)noise(t+0.2+Math.random()*1.3,{type:'bandpass',f:1800+Math.random()*1500,q:4,a:0.004,dec:0.06,gain:0.06})},
+    ooh(level){if(!ready())return;const t=now(),L=level||1;
+      /* crowd "oooh": filtered murmur swelling with a vowel-like formant plus a few detuned low voices */
+      for(const [f,q,gain] of [[320,5,0.16],[620,6,0.07],[180,3,0.06]]){const src=ctx.createBufferSource();src.buffer=noiseBuf;src.loop=true;const flt=ctx.createBiquadFilter();flt.type='bandpass';flt.frequency.setValueAtTime(f,t);flt.frequency.linearRampToValueAtTime(f*1.12,t+0.9);flt.Q.value=q;
+        const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t);gn.gain.linearRampToValueAtTime(gain*L,t+0.45);gn.gain.setValueAtTime(gain*L,t+0.9);gn.gain.exponentialRampToValueAtTime(0.0001,t+1.7);src.connect(flt);flt.connect(gn);gn.connect(master);src.start(t);src.stop(t+1.8)}
+      for(const f of [146,149,196,199,220]){const o=ctx.createOscillator();o.type='triangle';o.frequency.setValueAtTime(f,t);o.frequency.linearRampToValueAtTime(f*1.08,t+0.9);const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=600;
+        const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t);gn.gain.linearRampToValueAtTime(0.022*L,t+0.5);gn.gain.setValueAtTime(0.022*L,t+0.9);gn.gain.exponentialRampToValueAtTime(0.0001,t+1.6);o.connect(lp);lp.connect(gn);gn.connect(master);o.start(t);o.stop(t+1.7)}},
     applause(){if(!ready())return;const t=now();for(let i=0;i<22;i++)noise(t+0.1+i*0.055+Math.random()*0.03,{type:'bandpass',f:1600+Math.random()*1800,q:3,a:0.003,dec:0.05,gain:0.1})},
     groan(){if(!ready())return;const t=now();tone(t,{f:240,f2:150,type:'sawtooth',a:0.08,dec:0.6,gain:0.05});tone(t+0.02,{f:180,f2:120,type:'triangle',a:0.1,dec:0.7,gain:0.08});noise(t,{type:'lowpass',f:500,a:0.1,dec:0.7,gain:0.14})},
     win(){if(!ready())return;const t=now()+0.25;
@@ -472,7 +478,7 @@ function step(now){
       if(!sg.started){sg.started=true;if(sg.miss)SFX.whoosh();else if(!sg.tail||sg.win){SFX.hit(sg.final?1.15:sg.win?1.25:1);if(S.seg===0)SFX.whoosh()}}
       S.t+=dt;const t=Math.min(1,S.t/sg.dur);
       S.ball.u=sg.from.u+(sg.to.u-sg.from.u)*t;S.ball.v=sg.from.v+(sg.to.v-sg.from.v)*t;S.ball.z=sg.from.z+(sg.to.z-sg.from.z)*t+sg.h*Math.sin(Math.PI*t);
-      if(sg.reveal!==undefined&&t>0.15)S.reveal=Math.max(S.reveal,sg.reveal);
+      if(sg.reveal!==undefined&&t>0.15&&sg.reveal>S.reveal){S.reveal=sg.reveal;if(S.reveal===5)SFX.ooh(1);else if(S.reveal===6)SFX.ooh(0.75)}
       if(sg.final){const bs=betSide();S.me.target=bs?(bs==='player'?-0.62:0.62):0}else if(!sg.toFar&&!sg.tail)S.me.target=sg.to.u*0.9;
       if(sg.toFar||sg.win)S.opp.target=sg.to.u*0.9;
       if(sg.miss)S.ball.vis=t<0.95;
