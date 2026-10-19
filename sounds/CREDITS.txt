@@ -1,0 +1,3 @@
+Crowd clips from Mixkit (https://mixkit.co), Mixkit Sound Effects Free License.
+win-cheer.mp3 = "Small group cheer and applause" (sfx 518)
+light-applause.mp3 = "Audience light applause" (sfx 354)
