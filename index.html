@@ -148,7 +148,7 @@
         <div class="stat b"><div class="n" id="sB">0</div><div class="l">Banker</div></div>
         <div class="stat t"><div class="n" id="sT">0</div><div class="l">Tie</div></div>
       </div>
-      <div class="shoe">Cards left in shoe <b id="sS">416</b> · 8 decks</div>
+      <div class="shoe">8 decks · <b>continuous shuffle</b> · cards return after every hand</div>
     </div>
   </div>
 
@@ -414,7 +414,7 @@ function drawHud(){
   const sb=L.sb,fs=M?0.86:1;panel(sb.x,sb.y,sb.w,sb.h,8);
   g.fillStyle='#d4b25e';g.fillRect(sb.x+10,sb.y+10,2,12);
   text(g,M?'CLAY OPEN':'CLAY OPEN · PARIS',sb.x+20,sb.y+16,'600 '+(10*fs)+'px '+SERIF,'#f1dc96','left','.22em');
-  text(g,S.handNo?'HAND '+S.handNo:'NEW SHOE',sb.x+sb.w-10,sb.y+16,'500 '+(10*fs)+'px '+SANS,'#9fb0a7','right','.16em');
+  text(g,S.handNo?'HAND '+S.handNo:'READY',sb.x+sb.w-10,sb.y+16,'500 '+(10*fs)+'px '+SANS,'#9fb0a7','right','.16em');
   const rv=S.reveal;const ptsOf=(h,rev)=>{let n=0,c=0;for(const k of S.hand.order){if(c>=rev)break;c++;if(h.includes(k))n+=k.v}return String(n%10)};
   const pp=S.hand?ptsOf(S.hand.P,rv):'',bb=S.hand?ptsOf(S.hand.B,rv):'';
   const row=(y,name,wins,pts,col,hot)=>{g.fillStyle=col;g.beginPath();g.arc(sb.x+16,y,3.2,0,6.3);g.fill();text(g,name,sb.x+28,y,'600 '+(12*fs)+'px '+SERIF,'#f4efe3','left','.12em');
@@ -448,7 +448,7 @@ function drawHud(){
     if(!M){const tx=cd.x+cd.w-14;const hot=S.phase==='result';
       text(g,String(tot(S.hand.P)),tx,y1+chh/2,'700 18px '+SANS,hot&&S.hand.outcome==='P'?'#f1dc96':'#f4efe3','right');
       text(g,String(tot(S.hand.B)),tx,y2+chh/2,'700 18px '+SANS,hot&&S.hand.outcome==='B'?'#f1dc96':'#f4efe3','right')}
-  }else text(g,M?'8 decks':'8 decks · punto banco',cd.x+cd.w-12,y2+chh/2,'500 9px '+SANS,'#9fb0a7','right','.06em');
+  }else text(g,M?'8 decks':'8 decks · continuous shuffle',cd.x+cd.w-12,y2+chh/2,'500 9px '+SANS,'#9fb0a7','right','.06em');
 
   /* pace */
   const pc=L.pace;panel(pc.x,pc.y,pc.w,pc.h,pc.h/2);
@@ -491,7 +491,7 @@ const betSide=()=>S.bets.player>0?'player':S.bets.banker>0?'banker':null;
 function serve(){
   if(S.phase!=='bet')return;
   if(S.bets.player+S.bets.banker+S.bets.tie<=0){setMsg('Place a bet first: tap the left or right half of the court.');return}
-  if(shoeLeft<24){newShoe();setMsg('New shoe.')}
+  newShoe(); /* continuous shuffle: every hand comes from a full 8-deck composition, so counting is useless */
   S.last={...S.bets};S.hand=dealHand();S.handNo++;S.reveal=0;S.phase='rally';S.banner=null;S.trail=[];
   S.segs=buildRally(S.hand,betSide());S.seg=0;S.t=0;S.ball.vis=true;S.me.target=0;syncUi();
   SFX.serveCall();SFX.crowdOn();
@@ -559,7 +559,7 @@ function drawRoads(){
   for(const [k,v] of br.cells){const [c,r]=k.split(',').map(Number);if(c-off<0)continue;const x=gx+(c-off)*cell+cell/2,y=top+r*cell+cell/2;rg.strokeStyle=col(v.w);rg.lineWidth=2.4;rg.beginPath();rg.arc(x,y,rad*0.9,0,6.3);rg.stroke();
     if(v.ties){rg.strokeStyle='#3cc77d';rg.lineWidth=2;rg.beginPath();rg.moveTo(x-rad,y+rad);rg.lineTo(x+rad,y-rad);rg.stroke();if(v.ties>1){rg.fillStyle='#3cc77d';rg.font='700 8px '+SANS;rg.textAlign='center';rg.fillText(v.ties,x+rad+1,y-rad)}}}
   if(br.firstTies&&br.cells.size===0){rg.strokeStyle='#3cc77d';rg.lineWidth=2;rg.beginPath();rg.moveTo(gx+3,top+cell-3);rg.lineTo(gx+cell-3,top+3);rg.stroke()}
-  const cnt={P:0,B:0,T:0};h.forEach(o=>cnt[o]++);$('sP').textContent=cnt.P;$('sB').textContent=cnt.B;$('sT').textContent=cnt.T;$('sS').textContent=shoeLeft;
+  const cnt={P:0,B:0,T:0};h.forEach(o=>cnt[o]++);$('sP').textContent=cnt.P;$('sB').textContent=cnt.B;$('sT').textContent=cnt.T;
 }
 
 /* ---------- ui ---------- */
