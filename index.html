@@ -167,17 +167,22 @@ const hasLS='letterSpacing' in g;
 
 /* ---------- baccarat engine ---------- */
 const SUITS=['♠','♥','♦','♣'],RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-function newShoe(){const s=[];for(let d=0;d<8;d++)for(const su of SUITS)for(let r=0;r<13;r++)s.push({r:RANKS[r],s:su,v:r+1>=10?0:r+1});for(let i=s.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[s[i],s[j]]=[s[j],s[i]]}return s}
-function dealHand(shoe){
-  const P=[shoe.pop(),shoe.pop()],B=[shoe.pop(),shoe.pop()];const order=[P[0],B[0],P[1],B[1]];
+/* The shoe is never laid out in advance: only a count of each remaining card is kept, and every card is
+   drawn at the moment it is needed with a cryptographic random number. There is no "next card" to peek at. */
+const DECKS=8;let shoeCounts=null,shoeLeft=0;
+function newShoe(){shoeCounts=new Uint8Array(52).fill(DECKS);shoeLeft=52*DECKS;return shoeLeft}
+function rnd(n){const c=window.crypto||window.msCrypto;if(c&&c.getRandomValues){const a=new Uint32Array(1),max=Math.floor(0x100000000/n)*n;do{c.getRandomValues(a)}while(a[0]>=max);return a[0]%n}return Math.floor(Math.random()*n)}
+function drawCard(){if(!shoeCounts||shoeLeft<1)newShoe();let k=rnd(shoeLeft);for(let i=0;i<52;i++){if(k<shoeCounts[i]){shoeCounts[i]--;shoeLeft--;const r=i%13;return {r:RANKS[r],s:SUITS[Math.floor(i/13)],v:r+1>=10?0:r+1}}k-=shoeCounts[i]}return drawCard()}
+function dealHand(){
+  const P=[drawCard(),drawCard()],B=[drawCard(),drawCard()];const order=[P[0],B[0],P[1],B[1]];
   const tot=h=>h.reduce((a,c)=>a+c.v,0)%10;let pt=tot(P),bt=tot(B);
   if(pt<8&&bt<8){
     let third=null;
-    if(pt<=5){third=shoe.pop();P.push(third);order.push(third);pt=tot(P)}
+    if(pt<=5){third=drawCard();P.push(third);order.push(third);pt=tot(P)}
     let draw=false;
     if(third===null)draw=bt<=5;
     else{const c=third.v;draw=bt<=2||(bt===3&&c!==8)||(bt===4&&c>=2&&c<=7)||(bt===5&&c>=4&&c<=7)||(bt===6&&c>=6&&c<=7)}
-    if(draw){const b3=shoe.pop();B.push(b3);order.push(b3);bt=tot(B)}
+    if(draw){const b3=drawCard();B.push(b3);order.push(b3);bt=tot(B)}
   }
   return {P,B,pt,bt,order,outcome:pt>bt?'P':bt>pt?'B':'T'};
 }
@@ -296,7 +301,8 @@ const SFX=(()=>{
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)SFX.unlock()});
 
 /* ---------- state ---------- */
-const S={balance:1000,chip:25,bets:{player:0,banker:0,tie:0},last:null,lastWin:null,phase:'bet',shoe:newShoe(),hist:[],hand:null,handNo:0,wins:{P:0,B:0},pace:1,
+newShoe();
+const S={balance:1000,chip:25,bets:{player:0,banker:0,tie:0},last:null,lastWin:null,phase:'bet',hist:[],hand:null,handNo:0,wins:{P:0,B:0},pace:1,
   ball:{u:0,v:1,z:0,vis:false},trail:[],me:{u:0,tilt:0,target:0},opp:{u:0,target:0},segs:[],seg:0,t:0,reveal:0,banner:null,hold:0,hover:null};
 const fmt=n=>n.toLocaleString('en-US');
 
@@ -485,8 +491,8 @@ const betSide=()=>S.bets.player>0?'player':S.bets.banker>0?'banker':null;
 function serve(){
   if(S.phase!=='bet')return;
   if(S.bets.player+S.bets.banker+S.bets.tie<=0){setMsg('Place a bet first: tap the left or right half of the court.');return}
-  if(S.shoe.length<24){S.shoe=newShoe();setMsg('New shoe shuffled.')}
-  S.last={...S.bets};S.hand=dealHand(S.shoe);S.handNo++;S.reveal=0;S.phase='rally';S.banner=null;S.trail=[];
+  if(shoeLeft<24){newShoe();setMsg('New shoe.')}
+  S.last={...S.bets};S.hand=dealHand();S.handNo++;S.reveal=0;S.phase='rally';S.banner=null;S.trail=[];
   S.segs=buildRally(S.hand,betSide());S.seg=0;S.t=0;S.ball.vis=true;S.me.target=0;syncUi();
   SFX.serveCall();SFX.crowdOn();
 }
@@ -553,7 +559,7 @@ function drawRoads(){
   for(const [k,v] of br.cells){const [c,r]=k.split(',').map(Number);if(c-off<0)continue;const x=gx+(c-off)*cell+cell/2,y=top+r*cell+cell/2;rg.strokeStyle=col(v.w);rg.lineWidth=2.4;rg.beginPath();rg.arc(x,y,rad*0.9,0,6.3);rg.stroke();
     if(v.ties){rg.strokeStyle='#3cc77d';rg.lineWidth=2;rg.beginPath();rg.moveTo(x-rad,y+rad);rg.lineTo(x+rad,y-rad);rg.stroke();if(v.ties>1){rg.fillStyle='#3cc77d';rg.font='700 8px '+SANS;rg.textAlign='center';rg.fillText(v.ties,x+rad+1,y-rad)}}}
   if(br.firstTies&&br.cells.size===0){rg.strokeStyle='#3cc77d';rg.lineWidth=2;rg.beginPath();rg.moveTo(gx+3,top+cell-3);rg.lineTo(gx+cell-3,top+3);rg.stroke()}
-  const cnt={P:0,B:0,T:0};h.forEach(o=>cnt[o]++);$('sP').textContent=cnt.P;$('sB').textContent=cnt.B;$('sT').textContent=cnt.T;$('sS').textContent=S.shoe.length;
+  const cnt={P:0,B:0,T:0};h.forEach(o=>cnt[o]++);$('sP').textContent=cnt.P;$('sB').textContent=cnt.B;$('sT').textContent=cnt.T;$('sS').textContent=shoeLeft;
 }
 
 /* ---------- ui ---------- */
