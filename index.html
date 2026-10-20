@@ -497,14 +497,16 @@ function serve(){
   SFX.serveCall();SFX.crowdOn();
 }
 function resolve(){
-  const o=S.hand.outcome,b=S.bets;let ret=0;const staked=b.player+b.banker+b.tie;
-  if(o==='P'){ret=b.player*2;S.wins.P++}else if(o==='B'){ret=Math.round(b.banker*195)/100;S.wins.B++}else ret=b.player+b.banker+b.tie*9;
-  const net=Math.round((ret-staked)*100)/100;S.balance=Math.round((S.balance+ret)*100)/100;S.hist.push(o);S.lastWin=net>0?net:0;
+  /* Evolution-style settlement: only winnings are shown, as the full payout of the winning bet (stake included);
+     losing bets are never summed against it. On a tie, Player/Banker stakes come back quietly. */
+  const o=S.hand.outcome,b=S.bets;let pay=0,returned=0;
+  if(o==='P'){pay=b.player*2;S.wins.P++}else if(o==='B'){pay=Math.round(b.banker*195)/100;S.wins.B++}else{pay=b.tie*9;returned=b.player+b.banker}
+  S.balance=Math.round((S.balance+pay+returned)*100)/100;S.hist.push(o);S.lastWin=pay;
   const name=o==='P'?'PLAYER WINS':o==='B'?'BANKER WINS':'TIE';
-  S.banner={t:name,c:o==='P'?'#8db4ff':o==='B'?'#ff9b9a':'#7fe3ad',s:net>0?'YOU WIN  +'+fmt(net):net<0?'−'+fmt(-net):'PUSH · STAKE RETURNED'};
-  setMsg(net>0?'You won '+fmt(net)+'. Rebet repeats the same stake.':net<0?'Lost '+fmt(-net)+'. Place your bets for the next point.':'Push. Your stake is back.');
+  S.banner={t:name,c:o==='P'?'#8db4ff':o==='B'?'#ff9b9a':'#7fe3ad',s:pay>0?'YOU WIN  '+fmt(pay):returned>0?'BETS RETURNED':''};
+  setMsg(pay>0?'You win '+fmt(pay)+'. Rebet repeats the same stake.':returned>0?'Tie. Your side bets are returned.':name.charAt(0)+name.slice(1).toLowerCase()+'. Place your bets for the next point.');
   S.bets={player:0,banker:0,tie:0};S.phase='result';S.hold=0;syncUi();drawRoads();
-  SFX.crowdOff();if(net>0){SFX.cheer();SFX.win()}else if(net<0)SFX.groan();else{SFX.applause();SFX.tie()}
+  SFX.crowdOff();if(pay>0){SFX.cheer();SFX.win()}else if(returned>0){SFX.applause();SFX.tie()}else SFX.groan();
 }
 
 /* ---------- loop ---------- */
@@ -566,7 +568,7 @@ function drawRoads(){
 function setMsg(s){$('msg').textContent=s}
 function stack(el,amt){el.innerHTML='';if(!amt)return;const n=amt>=300?3:amt>=75?2:1;for(let i=0;i<n;i++){const d=document.createElement('div');d.className='chip';d.dataset.v=amt>=500?'500':amt>=100?'100':amt>=50?'50':amt>=25?'25':'10';if(i===n-1)d.textContent=fmt(amt);el.appendChild(d)}}
 function syncUi(){
-  $('balance').textContent=fmt(S.balance);$('total').textContent=fmt(S.bets.player+S.bets.banker+S.bets.tie);$('lastwin').textContent=S.lastWin==null?'—':S.lastWin>0?'+'+fmt(S.lastWin):'0';
+  $('balance').textContent=fmt(S.balance);$('total').textContent=fmt(S.bets.player+S.bets.banker+S.bets.tie);$('lastwin').textContent=S.lastWin==null?'—':fmt(S.lastWin);
   document.querySelectorAll('.zone').forEach(el=>el.classList.toggle('on',S.bets[el.dataset.b]>0));
   stack($('stP'),S.bets.player);stack($('stB'),S.bets.banker);stack($('stT'),S.bets.tie);
   const betting=S.phase==='bet';$('play').disabled=!betting;$('clear').disabled=!betting;$('rebet').disabled=!betting||!S.last;
