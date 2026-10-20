@@ -258,7 +258,7 @@ const SFX=(()=>{
       src.connect(flt);flt.connect(gn);gn.connect(master);src.start(t);crowd={src,gn,lfo}},
     crowdOff(){if(!crowd)return;const t=now(),c=crowd;crowd=null;c.gn.gain.setTargetAtTime(0.0001,t,0.4);c.src.stop(t+2);c.lfo.stop(t+2)},
     cheer(){if(!ready())return;
-      if(clips.win.buf){playClip(clips.win,{offset:0.05,dur:4.2,fadeIn:0.12,fadeOut:1.4,gain:0.42});return}
+      if(clips.win.buf){playClip(clips.win,{offset:0.05,dur:1.5,fadeIn:0.1,fadeOut:0.6,gain:0.42});return}
       const t=now()+0.1;
       /* fallback, a polite tennis crowd: soft, warm "yeah" voices swelling in, over a dense, gentle applause bed (no single claps) */
       for(let i=0;i<12;i++){const fem=Math.random()<0.5;const f=fem?240+Math.random()*150:130+Math.random()*100;
