@@ -67,6 +67,9 @@
   .zone.tie .name{font-size:17px}
   .zone .pays{font-size:10px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
   .zone .hint{position:absolute;top:8px;font-size:9px;letter-spacing:.24em;color:rgba(255,255,255,.45);text-transform:uppercase}
+  .zone .pick{position:absolute;top:-11px;left:50%;transform:translateX(-50%);display:none;font-family:var(--serif);font-weight:600;font-size:9px;letter-spacing:.22em;color:#2a1d05;background:linear-gradient(180deg,#f1dc96,#c9a650);padding:4px 12px;border-radius:20px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+  .zone.picked .pick{display:block}
+  .zone.picked{border-color:rgba(241,220,150,.9)}
   .stack{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:none;align-items:center;justify-content:center;width:60px;height:52px}
   .zone.on .stack{display:flex}
   .chip{--c:#2a63c9;width:46px;height:46px;border-radius:50%;position:relative;background:radial-gradient(circle at 50% 50%,var(--c) 0 50%,#f6f1e2 51% 60%,var(--c) 61% 100%);box-shadow:0 3px 6px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;text-shadow:0 1px 1px rgba(0,0,0,.6);cursor:pointer;flex:none;user-select:none;-webkit-user-select:none;touch-action:manipulation}
@@ -135,14 +138,14 @@
 </head>
 <body>
 <div class="app">
-  <div class="brand"><div class="t">CLAY COURT BACCARAT</div><div class="r">Live table · <b>Paris</b></div></div>
+  <div class="brand"><div class="t">BACCARAT TENNIS</div><div class="r">Powered by <b>true random number generator engine</b></div></div>
 
   <div class="frame">
     <div class="overlay" id="intro">
       <div class="intro" id="introBox">
         <div class="mark"><span></span></div>
         <h1>BACCARAT TENNIS</h1>
-        <div class="sub">Powered by Baccarat · Live table</div>
+        <div class="sub">Powered by Baccarat · True random number generator engine</div>
         <div class="bar"><i id="introBar"></i></div>
         <div class="enter"><button class="btn serve" id="enter">Enter the court</button></div>
       </div>
@@ -165,9 +168,9 @@
 
     <div class="table">
       <div class="zones">
-        <div class="zone player" data-b="player"><div class="hint">Jump left</div><div class="name">PLAYER</div><div class="pays">pays 1 : 1</div><div class="stack" id="stP"></div></div>
+        <div class="zone player" data-b="player"><div class="pick" id="pickP">YOUR PICK</div><div class="hint">Jump left</div><div class="name">PLAYER</div><div class="pays">pays 1 : 1</div><div class="stack" id="stP"></div></div>
         <div class="zone tie" data-b="tie"><div class="hint">Net</div><div class="name">TIE</div><div class="pays">pays 8 : 1</div><div class="stack" id="stT"></div></div>
-        <div class="zone banker" data-b="banker"><div class="hint">Jump right</div><div class="name">BANKER</div><div class="pays">pays 0.95 : 1</div><div class="stack" id="stB"></div></div>
+        <div class="zone banker" data-b="banker"><div class="pick" id="pickB">YOUR PICK</div><div class="hint">Jump right</div><div class="name">BANKER</div><div class="pays">pays 0.95 : 1</div><div class="stack" id="stB"></div></div>
       </div>
       <div class="rail">
         <div class="readouts">
@@ -205,7 +208,7 @@
   </div>
 
   <div class="foot">Powered by Baccarat</div>
-  <div class="fine">Punto banco drawing rules · Player 1:1 · Banker 0.95:1 · Tie 8:1 · Left or right pushes on a tie</div>
+  <div class="fine">True random number generator engine · Punto banco drawing rules · Player 1:1 · Banker 0.95:1 · Tie 8:1 · Left or right pushes on a tie</div>
 </div>
 
 <script>
@@ -304,6 +307,9 @@ const SFX=(()=>{
       tone(t,{f:210*p,f2:70,type:'sine',a:0.002,dec:0.09,gain:0.6});
       noise(t,{type:'bandpass',f:1400,q:0.8,a:0.002,dec:0.05,gain:0.5});
       noise(t,{type:'highpass',f:3000,a:0.001,dec:0.02,gain:0.25})},
+    smash(){if(!ready())return;const t=now();
+      tone(t,{f:160,f2:40,type:'sine',a:0.002,dec:0.22,gain:0.9});tone(t,{f:55,f2:30,type:'triangle',a:0.004,dec:0.35,gain:0.5});
+      noise(t,{type:'bandpass',f:900,q:0.6,a:0.002,dec:0.12,gain:0.7});noise(t,{type:'lowpass',f:400,a:0.003,dec:0.3,gain:0.5});noise(t+0.02,{type:'highpass',f:2500,a:0.001,dec:0.05,gain:0.3})},
     bounce(){if(!ready())return;const t=now();tone(t,{f:150,f2:70,a:0.002,dec:0.07,gain:0.35});noise(t,{type:'lowpass',f:900,a:0.002,dec:0.05,gain:0.3})},
     whoosh(){if(!ready())return;const t=now();noise(t,{type:'bandpass',f:500,f2:2400,q:1.5,a:0.12,dec:0.18,gain:0.12})},
     net(){if(!ready())return;const t=now();tone(t,{f:110,f2:60,type:'triangle',a:0.002,dec:0.12,gain:0.4});noise(t,{type:'lowpass',f:600,a:0.002,dec:0.18,gain:0.45});
@@ -362,7 +368,7 @@ const VENUES=[
   {name:'LONDON',open:'WIMBLEDON',court:['#2f6b2a','#3f8a36','#4c9c40'],inner:'rgba(200,255,160,.10)',outer:'rgba(20,60,15,.28)',stand:['#2a2a3a','#171722'],line:'#f6f6f0'}];
 const MATCH={side:null,amount:0,pts:{P:0,B:0},games:{P:0,B:0},game:1,venue:0,pending:null};
 const S={balance:1000,chip:25,bets:{player:0,banker:0,tie:0},last:null,lastWin:null,phase:'intro',hist:[],hand:null,handNo:0,wins:{P:0,B:0},pace:1,
-  ball:{u:0,v:1,z:0,vis:false},trail:[],me:{u:0,tilt:0,target:0},opp:{u:0,target:0},segs:[],seg:0,t:0,reveal:0,banner:null,hold:0,hover:null,event:''};
+  ball:{u:0,v:1,z:0,vis:false},trail:[],me:{u:0,tilt:0,target:0},opp:{u:0,target:0},segs:[],seg:0,t:0,reveal:0,banner:null,hold:0,hover:null,event:'',meKnock:null,oppKnock:null,shake:0};
 const fmt=n=>n.toLocaleString('en-US');
 
 /* ---------- layout + projection ---------- */
@@ -439,14 +445,22 @@ function ballDraw(x,y,r){const b=g.createRadialGradient(x-r*.35,y-r*.35,r*.2,x,y
 
 function drawScene(){
   g.clearRect(0,0,W,H);g.drawImage(bg,0,0,W,H);
+  g.save();if(S.shake>0){const a=S.shake*22;g.translate((Math.random()-0.5)*a,(Math.random()-0.5)*a)}
   const side=S.bets.player?'player':S.bets.banker?'banker':null;const hl=S.phase==='bet'?S.hover:null;
   const zone=(k,strong)=>{const u0=k==='player'?-1:0,u1=k==='player'?0:1;poly(g,[[u0,0],[u1,0],[u1,0.5],[u0,0.5]]);const col=k==='player'?'74,140,255':'232,80,78';g.fillStyle=`rgba(${col},${strong?.22:.10})`;g.fill();if(strong){g.strokeStyle=`rgba(${col},.9)`;g.lineWidth=2;g.stroke()}};
   if(hl&&hl!==side)zone(hl,false);if(side)zone(side,true);
   if(S.bets.tie){poly(g,[[-1.08,0.46],[1.08,0.46],[1.08,0.54],[-1.08,0.54]]);g.fillStyle='rgba(60,199,125,.35)';g.fill()}
   const lp=proj(-0.5,0.12,0),lb=proj(0.5,0.12,0),lf='600 '+(M?11:15)+'px '+SERIF;
   text(g,'PLAYER',lp.x,lp.y,lf,'rgba(255,255,255,.55)','center','.3em');text(g,'BANKER',lb.x,lb.y,lf,'rgba(255,255,255,.55)','center','.3em');
+  if(MATCH.side&&S.phase!=='gameover'){const tp=MATCH.side==='P'?lp:lb,tw=M?92:124,th=M?16:20;const ty=tp.y-(M?22:28);
+    g.fillStyle='rgba(241,220,150,.95)';rr(g,tp.x-tw/2,ty-th/2,tw,th,th/2);g.fill();
+    text(g,'YOUR PICK · '+fmt(MATCH.amount),tp.x,ty+.5,'700 '+(M?7.5:9)+'px '+SERIF,'#2a1d05','center','.14em');
+    poly(g,MATCH.side==='P'?[[-1,0],[0,0],[0,0.5],[-1,0.5]]:[[0,0],[1,0],[1,0.5],[0,0.5]]);g.strokeStyle='rgba(241,220,150,.55)';g.lineWidth=1.5;g.setLineDash([6,5]);g.stroke();g.setLineDash([])}
 
-  const op=proj(S.opp.u,0.98,0);figure(op.x,op.y,0.6*K*(M?1.3:1),S.opp.u>S.ball.u);
+  if(S.oppKnock!=null){const p=1-Math.pow(1-S.oppKnock,2.2),dir=S.opp.u>=0?1:-1;const op=proj(S.opp.u+dir*0.25*p,0.98+0.16*p,0);
+    g.save();g.translate(op.x,op.y);g.rotate(-dir*1.5*p);g.translate(-op.x,-op.y);figure(op.x,op.y-14*K*p,0.6*K*(M?1.3:1),dir<0);g.restore();
+    for(let i=0;i<5;i++){const a=Math.max(0,1-S.oppKnock*1.6-i*0.08);if(a<=0)continue;g.fillStyle='rgba(230,200,160,'+(a*0.5)+')';g.beginPath();g.arc(op.x-dir*(10+i*9)*K*(1-a),op.y-(4+i*5)*K*(1-a),(4+i*2)*K*(0.6+a),0,6.3);g.fill()}}
+  else{const op=proj(S.opp.u,0.98,0);figure(op.x,op.y,0.6*K*(M?1.3:1),S.opp.u>S.ball.u)}
 
   const b=S.ball;
   const drawBall=()=>{if(!b.vis)return;const bs=proj(b.u,b.v,0),bp=proj(b.u,b.v,b.z);g.fillStyle='rgba(0,0,0,.28)';g.beginPath();g.ellipse(bs.x,bs.y,6*bs.s,2.6*bs.s,0,0,6.3);g.fill();
@@ -461,8 +475,11 @@ function drawScene(){
 
   if(b.vis&&b.v<=0.5)drawBall();
 
-  const mp=proj(S.me.u,0.05,0),ms=1.5*K*(M?1.25:1);g.fillStyle='rgba(0,0,0,.22)';g.beginPath();g.ellipse(mp.x,mp.y+6,34*ms/1.5,8*ms/1.5,0,0,6.3);g.fill();
-  racket(mp.x,mp.y-34*ms/1.5,ms,S.me.tilt,'#8b7cf5');
+  const mp=proj(S.me.u,0.05,0),ms=1.5*K*(M?1.25:1);
+  if(S.meKnock!=null){const p=1-Math.pow(1-S.meKnock,2),dir=S.me.u>=0?1:-1;g.save();g.globalAlpha=1-0.75*p;
+    racket(mp.x+dir*110*K*p,mp.y-34*ms/1.5+90*K*p,ms*(1-0.25*p),S.me.tilt+dir*3.2*p,'#8b7cf5');g.restore()}
+  else{g.fillStyle='rgba(0,0,0,.22)';g.beginPath();g.ellipse(mp.x,mp.y+6,34*ms/1.5,8*ms/1.5,0,0,6.3);g.fill();racket(mp.x,mp.y-34*ms/1.5,ms,S.me.tilt,'#8b7cf5')}
+  g.restore();
 
   drawHud();
 }
@@ -476,6 +493,7 @@ function drawHud(){
   text(g,'GAME '+MATCH.game,sb.x+sb.w-10,sb.y+16,'500 '+(10*fs)+'px '+SANS,'#9fb0a7','right','.16em');
   const sl=scoreLabel();
   const row=(y,name,games,pts,col,hot)=>{g.fillStyle=col;g.beginPath();g.arc(sb.x+16,y,3.2,0,6.3);g.fill();text(g,name,sb.x+28,y,'600 '+(12*fs)+'px '+SERIF,'#f4efe3','left','.12em');
+    if(MATCH.side&&MATCH.side===name.charAt(0)){const px=sb.x+(M?84:96);g.fillStyle='#f1dc96';rr(g,px,y-7,M?30:38,14,7);g.fill();text(g,M?'PICK':'YOUR PICK',px+(M?15:19),y+.5,'700 '+(M?6:6.5)+'px '+SANS,'#2a1d05','center','.1em')}
     text(g,String(games),sb.x+sb.w-54,y,'600 '+(13*fs)+'px '+SANS,'#f4efe3','center');
     g.fillStyle=hot?'#f1dc96':'rgba(255,255,255,.08)';rr(g,sb.x+sb.w-44,y-10,34,20,3);g.fill();text(g,pts,sb.x+sb.w-27,y+.5,'700 '+(13*fs)+'px '+SANS,hot?'#2a1d05':'#f4efe3','center')};
   const r1=sb.y+(M?36:46),r2=r1+(M?22:30);
@@ -538,17 +556,23 @@ function drawHud(){
 /* Every flight ends exactly at a racket head: the near one (yours, v=NEAR_V, height ZN) or the far one (v=FAR_V, height ZF),
    with a ground bounce part-way (tb). The racket figures are moved to the same spot, so contact is visible. */
 const NEAR_V=0.05,FAR_V=0.98,ZF=56,OPP_OFF=0.04;
+/* would this outcome end the game? (used to stage the power shot before the hand is settled) */
+function endsGame(o){if(o==='T')return false;const p=MATCH.pts.P+(o==='P'?1:0),b=MATCH.pts.B+(o==='B'?1:0);return (p>=4||b>=4)&&Math.abs(p-b)>=2}
 function buildRally(hand,betSide){
   const ZN=M?42:34,n=hand.order.length,hits=n%2?n:n+1;const segs=[];let from={u:Math.random()*0.6-0.3,v:FAR_V,z:ZF};
+  const o=hand.outcome,power=endsGame(o),pickWins=power&&MATCH.side===o;
   for(let i=1;i<=hits;i++){
-    const toFar=i%2===0;let to;const o=hand.outcome;
+    const toFar=i%2===0;let to;
     if(i===hits){if(o==='T')to={u:Math.random()*0.4-0.2,v:0.5,z:34,net:true};else to={u:(o==='P'?-1:1)*0.62,v:NEAR_V,z:ZN}}
     else to=toFar?{u:Math.random()*1.2-0.6,v:FAR_V,z:ZF}:{u:Math.random()*1.2-0.6,v:NEAR_V,z:ZN};
-    segs.push({from,to,dur:i===hits?1.0:0.9,tb:to.net?null:0.58,h1:to.net?12:22+Math.random()*12,h2:10+Math.random()*6,reveal:Math.min(i,n),final:i===hits,toFar});
+    const fin=i===hits;
+    segs.push({from,to,dur:fin?(power?0.55:1.0):0.9,tb:to.net?null:(fin&&power?0.5:0.58),h1:to.net?12:(fin&&power?14:22+Math.random()*12),h2:fin&&power?6:10+Math.random()*6,reveal:Math.min(i,n),final:fin,toFar,power:fin&&power,knockMe:fin&&power&&!pickWins});
     from=to;
   }
-  const last=segs[segs.length-1].to,o=hand.outcome;
+  const last=segs[segs.length-1].to;
   if(o==='T'){segs.push({from:{u:last.u,v:0.5,z:34},to:{u:last.u,v:0.43,z:0},dur:0.45,h1:2,tail:true});segs.push({from:{u:last.u,v:0.43,z:0},to:{u:last.u,v:0.4,z:0},dur:0.3,h1:5,tail:true})}
+  else if(pickWins)segs.push({from:last,to:{u:-last.u*0.4,v:FAR_V,z:ZF*0.8},dur:0.42,h1:4,tail:true,win:true,smash:true});
+  else if(power)segs.push({from:last,to:{u:last.u*1.2,v:-0.4,z:0},dur:0.35,h1:3,tail:true,miss:true});
   else if(betSide&&((o==='P'&&betSide==='player')||(o==='B'&&betSide==='banker')))segs.push({from:last,to:{u:-last.u*0.5,v:1.12,z:0},dur:0.8,tb:0.6,h1:26,h2:6,tail:true,win:true});
   else segs.push({from:last,to:{u:last.u*1.3,v:-0.32,z:0},dur:0.5,h1:6,tail:true,miss:true});
   return segs;
@@ -565,7 +589,7 @@ function serve(){
   newShoe(); /* continuous shuffle: every hand comes from a full 8-deck composition, so counting is useless */
   S.last={...S.bets};S.hand=dealHand();S.handNo++;S.reveal=0;S.phase='rally';S.banner=null;S.trail=[];
   S.segs=buildRally(S.hand,betSide());S.seg=0;S.t=0;S.ball.vis=true;S.me.target=0;
-  S.opp.u=S.opp.target=S.segs[0].from.u-OPP_OFF;S.ball.u=S.segs[0].from.u;S.ball.v=FAR_V;S.ball.z=ZF;syncUi();
+  S.opp.u=S.opp.target=S.segs[0].from.u-OPP_OFF;S.ball.u=S.segs[0].from.u;S.ball.v=FAR_V;S.ball.z=ZF;S.meKnock=null;S.oppKnock=null;S.shake=0;syncUi();
   SFX.serveCall();SFX.crowdOn();
 }
 function resolve(){
@@ -587,7 +611,7 @@ function resolve(){
 /* ---------- tennis scoring: each hand is a point ---------- */
 const TP=['0','15','30','40'];
 function scoreLabel(){const p=MATCH.pts.P,b=MATCH.pts.B;
-  if(p>=3&&b>=3){if(p===b)return{P:'40',B:'40',state:'DEUCE'};return p>b?{P:'AD',B:'40',state:'ADVANTAGE PLAYER'}:{P:'40',B:'AD',state:'ADVANTAGE BANKER'}}
+  if(p>=3&&b>=3){if(p===b)return{P:'40',B:'40',state:'TIE-BREAK'};return p>b?{P:'AD',B:'40',state:'ADVANTAGE PLAYER'}:{P:'40',B:'AD',state:'ADVANTAGE BANKER'}}
   return{P:TP[Math.min(p,3)],B:TP[Math.min(b,3)],state:(p===3&&b<3)?'GAME POINT PLAYER':(b===3&&p<3)?'GAME POINT BANKER':''}}
 function addPoint(o){MATCH.pts[o]++;const p=MATCH.pts.P,b=MATCH.pts.B;if((p>=4||b>=4)&&Math.abs(p-b)>=2){MATCH.pending=p>b?'P':'B';return 'GAME'}return scoreLabel().state}
 function gameOver(){
@@ -598,7 +622,7 @@ function gameOver(){
   syncUi();if(won){SFX.cheer();SFX.win()}else SFX.applause();
 }
 function nextGame(){
-  MATCH.pts={P:0,B:0};MATCH.game++;MATCH.venue=(MATCH.venue+1)%VENUES.length;MATCH.pending=null;MATCH.side=null;MATCH.amount=0;S.banner=null;S.event='';
+  MATCH.pts={P:0,B:0};MATCH.game++;MATCH.venue=(MATCH.venue+1)%VENUES.length;MATCH.pending=null;MATCH.side=null;MATCH.amount=0;S.banner=null;S.event='';S.meKnock=null;S.oppKnock=null;S.shake=0;
   paintBackdrop();openMatchBet();
 }
 
@@ -614,21 +638,25 @@ function step(now){
       S.ball.u=sg.from.u+(sg.to.u-sg.from.u)*t;S.ball.v=sg.from.v+(sg.to.v-sg.from.v)*t;S.ball.z=ballZ(sg,t);
       if(sg.tb&&!sg.bounced&&t>=sg.tb){sg.bounced=true;SFX.bounce()}
       if(sg.reveal!==undefined&&t>0.15&&sg.reveal>S.reveal){S.reveal=sg.reveal;if(S.reveal===5)SFX.ooh(1);else if(S.reveal===6)SFX.ooh(0.75)}
-      if(sg.final){const bs=betSide();S.me.target=bs?(bs==='player'?-0.62:0.62):0}else if(!sg.toFar&&!sg.tail)S.me.target=sg.to.u;
+      if(sg.final){const bs=betSide();S.me.target=sg.power?sg.to.u:(bs?(bs==='player'?-0.62:0.62):0)}else if(!sg.toFar&&!sg.tail)S.me.target=sg.to.u;
       if(sg.toFar||sg.win)S.opp.target=sg.to.u-OPP_OFF;
       if(sg.miss)S.ball.vis=t<0.95;
-      trailT+=dt;if(trailT>0.03){trailT=0;const bp=proj(S.ball.u,S.ball.v,S.ball.z);S.trail.push({x:bp.x,y:bp.y,r:6*bp.s+1.5});if(S.trail.length>7)S.trail.shift()}
-      if(t>=1){if(sg.to.net)SFX.net();S.seg++;S.t=0;if(S.seg>=S.segs.length){S.reveal=S.hand.order.length;resolve()}}
+      trailT+=dt;if(trailT>(sg.power||sg.smash?0.015:0.03)){trailT=0;const bp=proj(S.ball.u,S.ball.v,S.ball.z);S.trail.push({x:bp.x,y:bp.y,r:6*bp.s+1.5});if(S.trail.length>(sg.power||sg.smash?12:7))S.trail.shift()}
+      if(t>=1){if(sg.to.net)SFX.net();
+        if(sg.knockMe){S.meKnock=0;S.shake=0.45;SFX.smash()}
+        if(sg.smash){S.oppKnock=0;S.shake=0.55;S.ball.vis=false;SFX.smash();SFX.ooh(1.2)}
+        S.seg++;S.t=0;if(S.seg>=S.segs.length){S.reveal=S.hand.order.length;resolve()}}
     }
   }else if(S.phase==='result'){S.hold+=dt;if(S.hold>2.4){
       if(MATCH.pending)gameOver();
       else{S.phase='bet';S.ball.vis=false;S.trail=[];S.me.target=0;S.opp.target=0;S.hold=0;
-        if(S.event==='DEUCE'){S.banner={t:'DEUCE',c:'#f1dc96',s:'TWO CLEAR POINTS TO TAKE THE GAME',pulse:true};SFX.ooh(1)}
+        if(S.event==='TIE-BREAK'){S.banner={t:'TIE-BREAK',c:'#f1dc96',s:'DEUCE · 40-40 · TWO CLEAR POINTS WIN',pulse:true};SFX.ooh(1)}
         else if(S.event&&S.event.startsWith('ADVANTAGE')){S.banner={t:S.event,c:'#f1dc96',s:'GAME POINT',pulse:true}}
         syncUi()}}}
   else if(S.phase==='gameover'){S.hold+=dt;if(S.hold>4.2)nextGame()}
   else{S.hold+=dt;if(S.hold>4)S.banner=null}
   const k=1-Math.pow(0.0005,dt);S.me.u+=(S.me.target-S.me.u)*k;S.me.tilt=S.me.u*0.9;S.opp.u+=(S.opp.target-S.opp.u)*k;
+  if(S.meKnock!=null){S.meKnock=Math.min(1,S.meKnock+dt/0.9)}if(S.oppKnock!=null){S.oppKnock=Math.min(1,S.oppKnock+dt/1.1)}if(S.shake>0)S.shake=Math.max(0,S.shake-dt);
   drawScene();requestAnimationFrame(step);
 }
 
@@ -669,7 +697,8 @@ function setMsg(s){$('msg').textContent=s}
 function stack(el,amt){el.innerHTML='';if(!amt)return;const n=amt>=300?3:amt>=75?2:1;for(let i=0;i<n;i++){const d=document.createElement('div');d.className='chip';d.dataset.v=amt>=500?'500':amt>=100?'100':amt>=50?'50':amt>=25?'25':'10';if(i===n-1)d.textContent=fmt(amt);el.appendChild(d)}}
 function syncUi(){
   $('balance').textContent=fmt(S.balance);$('total').textContent=fmt(S.bets.player+S.bets.banker+S.bets.tie);$('lastwin').textContent=S.lastWin==null?'—':fmt(S.lastWin);
-  document.querySelectorAll('.zone').forEach(el=>el.classList.toggle('on',S.bets[el.dataset.b]>0));
+  document.querySelectorAll('.zone').forEach(el=>{el.classList.toggle('on',S.bets[el.dataset.b]>0);el.classList.toggle('picked',(MATCH.side==='P'&&el.dataset.b==='player')||(MATCH.side==='B'&&el.dataset.b==='banker'))});
+  document.querySelectorAll('.zone .pick').forEach(el=>{el.textContent='YOUR PICK · '+fmt(MATCH.amount)});
   stack($('stP'),S.bets.player);stack($('stB'),S.bets.banker);stack($('stT'),S.bets.tie);
   const betting=S.phase==='bet';$('play').disabled=!betting;$('clear').disabled=!betting;$('rebet').disabled=!betting||!S.last;
 }
