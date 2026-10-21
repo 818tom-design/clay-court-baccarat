@@ -102,7 +102,7 @@
   .btn:active{transform:scale(.97)}
   .btn:disabled{opacity:.35;cursor:default;background:transparent;transform:none}
   .btn.serve{background:linear-gradient(180deg,#f1dc96,#c9a650);color:#2a1d05;border-color:#f1dc96;padding:13px 30px;font-size:13px;box-shadow:0 6px 18px rgba(212,178,94,.35)}
-  .btn.auto{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.22);color:var(--muted)}
+  .btn.auto{background:linear-gradient(180deg,#eceef3,#b4b8c4);color:#1b2030;border-color:#f3f4f7;box-shadow:0 6px 18px rgba(0,0,0,.4),inset 0 1px 0 #fff}
   .btn.auto.on{background:linear-gradient(180deg,#5fe09a,#22a862);border-color:#8cf0b8;color:#06301a;box-shadow:0 0 18px rgba(60,199,125,.65),0 0 0 1px rgba(140,240,184,.5);animation:glow 1.6s ease-in-out infinite}
   @keyframes glow{0%,100%{box-shadow:0 0 14px rgba(60,199,125,.45)}50%{box-shadow:0 0 26px rgba(60,199,125,.9)}}
   .msg{margin-top:12px;text-align:center;font-size:12px;color:var(--muted);letter-spacing:.04em;min-height:16px;position:relative;z-index:1}
@@ -158,7 +158,7 @@
       <div class="intro" id="introBox">
         <div class="mark"><span></span></div>
         <h1>BACCARAT TENNIS</h1>
-        <div class="sub">Powered by Baccarat · True random number generator engine</div>
+        <div class="sub">True random number generator engine</div>
         <div class="bar"><i id="introBar"></i></div>
         <div class="enter"><button class="btn serve" id="enter">Enter the court</button></div>
       </div>
@@ -184,9 +184,9 @@
 
     <div class="table">
       <div class="zones">
-        <div class="zone player" data-b="player"><div class="pick" id="pickP">YOUR PICK</div><div class="hint">Jump left</div><div class="name">PLAYER</div><div class="pays">pays 1 : 1</div><div class="stack" id="stP"></div></div>
-        <div class="zone tie" data-b="tie"><div class="hint">Net</div><div class="name">TIE</div><div class="pays">pays 8 : 1</div><div class="stack" id="stT"></div></div>
-        <div class="zone banker" data-b="banker"><div class="pick" id="pickB">YOUR PICK</div><div class="hint">Jump right</div><div class="name">BANKER</div><div class="pays">pays 0.95 : 1</div><div class="stack" id="stB"></div></div>
+        <div class="zone player" data-b="player"><div class="pick" id="pickP">YOUR PICK</div><div class="name">PLAYER</div><div class="pays">pays 1 : 1</div><div class="stack" id="stP"></div></div>
+        <div class="zone tie" data-b="tie"><div class="name">TIE</div><div class="pays">pays 8 : 1</div><div class="stack" id="stT"></div></div>
+        <div class="zone banker" data-b="banker"><div class="pick" id="pickB">YOUR PICK</div><div class="name">BANKER</div><div class="pays">pays 0.95 : 1</div><div class="stack" id="stB"></div></div>
       </div>
       <div class="rail">
         <div class="readouts">
@@ -421,7 +421,7 @@ function paintBackdrop(){
   /* sponsor boards */
   c.fillStyle='#0b1230';c.fillRect(0,sky-bh,W,bh);c.fillStyle='rgba(212,178,94,.8)';c.fillRect(0,sky-bh,W,1);c.fillRect(0,sky-1,W,1);
   c.font='600 '+(M?8:10)+'px '+SERIF;c.fillStyle='#d4b25e';c.textBaseline='middle';c.textAlign='center';if(hasLS)c.letterSpacing='.3em';
-  const words=[V.open,'POWERED BY BACCARAT',V.name];const sp=M?120:150;for(let i=0,x=sp*0.45;x<W+sp;i++,x+=sp)c.fillText(words[i%3],x,sky-bh/2);
+  const sp=M?190:260;for(let x=sp*0.5;x<W+sp;x+=sp)c.fillText(V.open,x,sky-bh/2);
   if(hasLS)c.letterSpacing='0px';
   /* court surface */
   gr=c.createLinearGradient(0,sky,0,H);gr.addColorStop(0,V.court[0]);gr.addColorStop(0.5,V.court[1]);gr.addColorStop(1,V.court[2]);c.fillStyle=gr;c.fillRect(0,sky,W,H-sky);
@@ -463,8 +463,7 @@ function drawScene(){
   text(g,'PLAYER',lp.x,lp.y,lf,'rgba(255,255,255,.55)','center','.3em');text(g,'BANKER',lb.x,lb.y,lf,'rgba(255,255,255,.55)','center','.3em');
   if(MATCH.side&&S.phase!=='gameover'){const tp=MATCH.side==='P'?lp:lb,tw=M?92:124,th=M?16:20;const ty=tp.y-(M?22:28);
     g.fillStyle='rgba(241,220,150,.95)';rr(g,tp.x-tw/2,ty-th/2,tw,th,th/2);g.fill();
-    text(g,'YOUR PICK · '+fmt(MATCH.amount),tp.x,ty+.5,'700 '+(M?7.5:9)+'px '+SERIF,'#2a1d05','center','.14em');
-    poly(g,MATCH.side==='P'?[[-1,0],[0,0],[0,0.5],[-1,0.5]]:[[0,0],[1,0],[1,0.5],[0,0.5]]);g.strokeStyle='rgba(241,220,150,.55)';g.lineWidth=1.5;g.setLineDash([6,5]);g.stroke();g.setLineDash([])}
+    text(g,'YOUR PICK · '+fmt(MATCH.amount),tp.x,ty+.5,'700 '+(M?7.5:9)+'px '+SERIF,'#2a1d05','center','.14em')}
 
   if(S.oppKnock!=null){const p=1-Math.pow(1-S.oppKnock,2.2),dir=S.opp.u>=0?1:-1;const op=proj(S.opp.u+dir*0.25*p,0.98+0.16*p,0);
     g.save();g.translate(op.x,op.y);g.rotate(-dir*1.5*p);g.translate(-op.x,-op.y);figure(op.x,op.y-14*K*p,0.6*K*(M?1.3:1),dir<0);g.restore();
@@ -512,14 +511,12 @@ function drawHud(){
     const st=S.phase==='rally'?'RALLY IN PLAY':S.phase==='gameover'?'GAME OVER':(sl.state||(S.phase==='bet'?'PLACE YOUR BETS':'POINT'));
     text(g,st,sb.x+20,sb.y+108,'500 9px '+SANS,sl.state&&S.phase!=='rally'?'#f1dc96':'#9fb0a7','left','.2em');
     if(S.phase==='rally'){const prog=Math.min(1,(S.seg+S.t/((S.segs[S.seg]||{dur:1}).dur))/Math.max(1,S.segs.length));
-      g.fillStyle='rgba(255,255,255,.1)';g.fillRect(sb.x+146,sb.y+106,80,3);g.fillStyle='#d4b25e';g.fillRect(sb.x+146,sb.y+106,80*prog,3)}
-    else if(MATCH.side)text(g,'MATCH · '+(MATCH.side==='P'?'PLAYER':'BANKER')+' '+fmt(MATCH.amount),sb.x+sb.w-10,sb.y+108,'600 9px '+SANS,'#f1dc96','right','.12em')}
-  else if(MATCH.side){text(g,'M · '+(MATCH.side==='P'?'P':'B')+' '+fmt(MATCH.amount),sb.x+sb.w-10,sb.y+sb.h-9,'600 8px '+SANS,'#f1dc96','right','.1em')}
+      g.fillStyle='rgba(255,255,255,.1)';g.fillRect(sb.x+146,sb.y+106,80,3);g.fillStyle='#d4b25e';g.fillRect(sb.x+146,sb.y+106,80*prog,3)}}
 
   /* cards */
   const cd=L.cd;panel(cd.x,cd.y,cd.w,cd.h,8);
   g.fillStyle='#d4b25e';g.fillRect(cd.x+10,cd.y+10,2,12);
-  text(g,'BACCARAT HAND',cd.x+20,cd.y+16,'600 '+(10*fs)+'px '+SERIF,'#f1dc96','left','.22em');
+  text(g,'HAND',cd.x+20,cd.y+16,'600 '+(10*fs)+'px '+SERIF,'#f1dc96','left','.22em');
   const cw=M?20:28,chh=M?27:38,cs=M?24:33,y1=cd.y+(M?26:30),y2=y1+chh+(M?5:8);
   const slot=(x,y)=>{rr(g,x,y,cw,chh,3);g.strokeStyle='rgba(212,178,94,.28)';g.lineWidth=1;g.setLineDash([3,3]);g.stroke();g.setLineDash([])};
   const card=(c,x,y)=>{g.save();g.shadowColor='rgba(0,0,0,.45)';g.shadowBlur=4;g.shadowOffsetY=2;rr(g,x,y,cw,chh,3);g.fillStyle='#fbf7ee';g.fill();g.restore();g.strokeStyle='rgba(0,0,0,.25)';g.lineWidth=1;rr(g,x,y,cw,chh,3);g.stroke();
@@ -535,7 +532,7 @@ function drawHud(){
     if(!M){const tx=cd.x+cd.w-14;const hot=S.phase==='result';
       text(g,String(tot(S.hand.P)),tx,y1+chh/2,'700 18px '+SANS,hot&&S.hand.outcome==='P'?'#f1dc96':'#f4efe3','right');
       text(g,String(tot(S.hand.B)),tx,y2+chh/2,'700 18px '+SANS,hot&&S.hand.outcome==='B'?'#f1dc96':'#f4efe3','right')}
-  }else text(g,M?'8 decks':'8 decks · continuous shuffle',cd.x+cd.w-12,y2+chh/2,'500 9px '+SANS,'#9fb0a7','right','.06em');
+  }
 
   /* road strip: the last results as a row of beads, newest on the right */
   const rd=L.road;panel(rd.x,rd.y,rd.w,rd.h,rd.h/2);
