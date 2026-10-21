@@ -56,7 +56,7 @@
   .stage{position:relative;width:100%;aspect-ratio:1000/560;background:#000}
   canvas#court{width:100%;height:100%;display:block;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 
-  .table{position:relative;background:radial-gradient(1000px 420px at 50% -40px,#12503b 0%,#0b3a2b 45%,#072519 100%);padding:22px 26px 18px;border-top:1px solid rgba(212,178,94,.55)}
+  .table{position:relative;background:radial-gradient(1000px 420px at 50% -40px,#12503b 0%,#0b3a2b 45%,#072519 100%);padding:22px 26px 22px;border-top:1px solid rgba(212,178,94,.55)}
   .table::before{content:"";position:absolute;left:0;right:0;top:3px;height:1px;background:rgba(212,178,94,.25)}
   .table::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(45deg,rgba(255,255,255,.012) 0 2px,transparent 2px 4px)}
   .zones{display:grid;grid-template-columns:1fr 210px 1fr;gap:16px;align-items:end;position:relative;z-index:1}
@@ -95,10 +95,9 @@
   .btn:active{transform:scale(.97)}
   .btn:disabled{opacity:.35;cursor:default;background:transparent;transform:none}
   .btn.serve{background:linear-gradient(180deg,#f1dc96,#c9a650);color:#2a1d05;border-color:#f1dc96;padding:13px 30px;font-size:13px;box-shadow:0 6px 18px rgba(212,178,94,.35)}
-  .btn.auto{position:relative;padding-left:30px}
-  .btn.auto::before{content:"";position:absolute;left:12px;top:50%;width:9px;height:9px;margin-top:-5px;border-radius:50%;border:1.5px solid rgba(212,178,94,.6)}
-  .btn.auto.on{background:rgba(241,220,150,.16);border-color:var(--gold2)}
-  .btn.auto.on::before{background:#3cc77d;border-color:#3cc77d;box-shadow:0 0 8px #3cc77d}
+  .btn.auto{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.22);color:var(--muted)}
+  .btn.auto.on{background:linear-gradient(180deg,#5fe09a,#22a862);border-color:#8cf0b8;color:#06301a;box-shadow:0 0 18px rgba(60,199,125,.65),0 0 0 1px rgba(140,240,184,.5);animation:glow 1.6s ease-in-out infinite}
+  @keyframes glow{0%,100%{box-shadow:0 0 14px rgba(60,199,125,.45)}50%{box-shadow:0 0 26px rgba(60,199,125,.9)}}
   .msg{margin-top:12px;text-align:center;font-size:12px;color:var(--muted);letter-spacing:.04em;min-height:16px;position:relative;z-index:1}
 
   .panel{background:rgba(7,11,24,.8);border:1px solid rgba(212,178,94,.3);border-radius:14px;padding:12px 14px;min-width:0}
@@ -199,7 +198,6 @@
           <button class="btn serve" id="play">Serve</button>
         </div>
       </div>
-      <div class="msg" id="msg">Place your bets · tap a side of the court or a betting area</div>
     </div>
   </div>
 
@@ -369,7 +367,7 @@ const VENUES=[
   {name:'LONDON',open:'WIMBLEDON',court:['#2f6b2a','#3f8a36','#4c9c40'],inner:'rgba(200,255,160,.10)',outer:'rgba(20,60,15,.28)',stand:['#2a2a3a','#171722'],line:'#f6f6f0'}];
 const MATCH={side:null,amount:0,pts:{P:0,B:0},games:{P:0,B:0},game:1,venue:0,pending:null};
 const S={balance:1000,chip:25,bets:{player:0,banker:0,tie:0},last:null,lastWin:null,phase:'intro',hist:[],hand:null,handNo:0,wins:{P:0,B:0},pace:1,
-  ball:{u:0,v:1,z:0,vis:false},trail:[],me:{u:0,tilt:0,target:0},opp:{u:0,target:0},segs:[],seg:0,t:0,reveal:0,banner:null,hold:0,hover:null,event:'',meKnock:null,oppKnock:null,shake:0,auto:false,autoTimer:null};
+  ball:{u:0,v:1,z:0,vis:false},trail:[],me:{u:0,tilt:0,target:0},opp:{u:0,target:0},segs:[],seg:0,t:0,reveal:0,banner:null,hold:0,hover:null,event:'',meKnock:null,oppKnock:null,shake:0,auto:false,autoTimer:null,toast:null};
 const fmt=n=>n.toLocaleString('en-US');
 
 /* ---------- layout + projection ---------- */
@@ -563,7 +561,12 @@ function drawHud(){
     g.fillStyle='rgba(212,178,94,.6)';g.fillRect(bx+40,byy+bh2-10,bw2-80,1);
     text(g,bn.t,C.cx,byy+(M?24:28),'700 '+(M?18:24)+'px '+SERIF,bn.c,'center','.22em');if(bn.s)text(g,bn.s,C.cx,byy+(M?47:56),'500 '+(M?11:13)+'px '+SANS,'#f4efe3','center','.12em');
     if(bn.s2)text(g,bn.s2,C.cx,byy+(M?64:76),'600 '+(M?9:11)+'px '+SERIF,'#f1dc96','center','.2em');g.restore()}
-  else if(S.phase==='bet'){const s=S.bets.player||S.bets.banker||S.bets.tie?'PRESS SERVE':'PLACE YOUR BETS';const pr=L.prompt;const px=M?Math.max(pc.x+pc.w+pc.h+16,C.cx-pr.w/2):C.cx-pr.w/2;const pw2=M?Math.min(pr.w,W-px-8):pr.w;panel(px,pr.y,pw2,pr.h,pr.h/2);text(g,s,px+pw2/2,pr.y+pr.h/2,'600 '+(M?8:10)+'px '+SERIF,'#f1dc96','center','.2em')}
+  const toast=S.toast&&performance.now()<S.toast.until?S.toast.t:null;
+  if(toast||S.phase==='bet'){const s=toast||(S.bets.player||S.bets.banker||S.bets.tie?'PRESS SERVE':'PLACE YOUR BETS');const pr=L.prompt;
+    const px=M?pc.x+pc.w+pc.h+16:C.cx-(toast?Math.min(W-2*64,360):pr.w)/2;const pw2=M?W-px-8:(toast?Math.min(W-2*64,360):pr.w);
+    panel(px,pr.y,pw2,pr.h,pr.h/2);
+    if(toast){g.font='500 '+(M?8:10)+'px '+SANS;if(hasLS)g.letterSpacing='0px';let st=s;while(st.length>4&&g.measureText(st).width>pw2-20)st=st.slice(0,-2).trimEnd()+'…';text(g,st,px+pw2/2,pr.y+pr.h/2,'500 '+(M?8:10)+'px '+SANS,'#f4efe3','center')}
+    else text(g,s,px+pw2/2,pr.y+pr.h/2,'600 '+(M?8:10)+'px '+SERIF,'#f1dc96','center','.2em')}
 }
 
 /* ---------- rally ---------- */
@@ -666,7 +669,7 @@ function step(now){
       else{S.phase='bet';S.ball.vis=false;S.trail=[];S.me.target=0;S.opp.target=0;S.hold=0;
         if(S.event==='TIE-BREAK'){S.banner={t:'TIE-BREAK',c:'#f1dc96',s:'DEUCE · 40-40 · TWO CLEAR POINTS WIN',pulse:true};SFX.ooh(1)}
         else if(S.event&&S.event.startsWith('ADVANTAGE')){S.banner={t:S.event,c:'#f1dc96',s:'GAME POINT',pulse:true}}
-        const laid=restake();if(laid&&!S.auto)setMsg('Same stake is on the table. Press Serve, or Clear to change it.');
+        const laid=restake();if(laid&&!S.auto)setMsg('Same stake is on. Press Serve.');
         if(S.auto){if(laid)S.autoTimer=1.1;else setAuto(false)}
         syncUi()}}}
   else if(S.phase==='gameover'){S.hold+=dt;if(S.hold>4.2)nextGame()}
@@ -678,7 +681,7 @@ function step(now){
 }
 
 /* ---------- ui ---------- */
-function setMsg(s){$('msg').textContent=s}
+function setMsg(s){S.toast={t:s,until:performance.now()+3200}}
 function stack(el,amt){el.innerHTML='';if(!amt)return;const n=amt>=300?3:amt>=75?2:1;for(let i=0;i<n;i++){const d=document.createElement('div');d.className='chip';d.dataset.v=amt>=500?'500':amt>=100?'100':amt>=50?'50':amt>=25?'25':'10';if(i===n-1)d.textContent=fmt(amt);el.appendChild(d)}}
 function syncUi(){
   $('balance').textContent=fmt(S.balance);$('total').textContent=fmt(S.bets.player+S.bets.banker+S.bets.tie);$('lastwin').textContent=S.lastWin==null?'—':fmt(S.lastWin);
@@ -686,21 +689,21 @@ function syncUi(){
   document.querySelectorAll('.zone .pick').forEach(el=>{el.textContent='YOUR PICK · '+fmt(MATCH.amount)});
   stack($('stP'),S.bets.player);stack($('stB'),S.bets.banker);stack($('stT'),S.bets.tie);
   const betting=S.phase==='bet';$('play').disabled=!betting;$('clear').disabled=!betting;
-  $('auto').classList.toggle('on',S.auto);$('auto').textContent=S.auto?'Autoplay on':'Autoplay';
+  $('auto').classList.toggle('on',S.auto);
 }
 /* the stake from the last point is laid again on the same spot, so each point is just Serve */
 function restake(){if(!S.last)return false;const tot=S.last.player+S.last.banker+S.last.tie;if(tot<=0)return false;
   if(S.balance<tot){setMsg('Not enough balance to lay the same stake again.');return false}
   S.bets={...S.last};S.balance-=tot;return true}
 function setAuto(on){S.auto=on;S.autoTimer=null;syncUi();
-  if(on){setMsg('Autoplay on: same stake, same spot, point after point until the game is decided.');if(S.phase==='bet'){if(S.bets.player+S.bets.banker+S.bets.tie>0)S.autoTimer=0.5;else{S.auto=false;syncUi();setMsg('Place a stake first, then turn on autoplay.')}}}
+  if(on){setMsg('Autoplay on until the game is decided.');if(S.phase==='bet'){if(S.bets.player+S.bets.banker+S.bets.tie>0)S.autoTimer=0.5;else{S.auto=false;syncUi();setMsg('Place a stake first, then turn on autoplay.')}}}
   else setMsg('Autoplay off.')}
 function place(kind){
   if(S.phase!=='bet')return;const amt=S.chip;if(S.balance<amt){setMsg('Not enough balance for that chip.');return}
   if(kind==='player'&&S.bets.banker){S.balance+=S.bets.banker;S.bets.banker=0}
   if(kind==='banker'&&S.bets.player){S.balance+=S.bets.player;S.bets.player=0}
   S.bets[kind]+=amt;S.balance-=amt;S.banner=null;SFX.chip();
-  setMsg(kind==='tie'?'Tie side bet placed. Add a side or serve as is.':(kind==='player'?'Jumping left · Player.':'Jumping right · Banker.')+' Press Serve.');
+  setMsg(kind==='tie'?'Tie side bet placed.':(kind==='player'?'Jumping left · Player.':'Jumping right · Banker.')+' Press Serve.');
   syncUi();
 }
 function clearBets(){if(S.phase!=='bet')return;if(S.bets.player+S.bets.banker+S.bets.tie>0)SFX.chip();S.balance+=S.bets.player+S.bets.banker+S.bets.tie;S.bets={player:0,banker:0,tie:0};S.last=null;if(S.auto)setAuto(false);syncUi()}
@@ -736,7 +739,7 @@ $('mbGo').addEventListener('click',()=>{
   if(mbAmt>S.balance){$('mbErr').textContent='Not enough balance for that match bet.';return}
   MATCH.side=mbSide;MATCH.amount=mbAmt;S.balance-=mbAmt;$('matchbet').hidden=true;S.phase='bet';S.hold=0;
   S.banner={t:'GAME '+MATCH.game+' · '+VENUES[MATCH.venue%VENUES.length].name,c:'#f1dc96',s:'MATCH BET  '+(mbSide==='P'?'PLAYER':'BANKER')+'  '+fmt(mbAmt)};
-  setMsg('Match bet on '+(mbSide==='P'?'Player':'Banker')+' for '+fmt(mbAmt)+'. Now bet point by point.');SFX.chip();syncUi();
+  setMsg('Match bet: '+(mbSide==='P'?'Player':'Banker')+' '+fmt(mbAmt)+'. Now bet each point.');SFX.chip();syncUi();
 });
 (function intro(){const bar=$('introBar');setTimeout(()=>{bar.style.width='100%'},80);setTimeout(()=>{$('introBox').classList.add('ready')},2300);
   $('enter').addEventListener('click',()=>{SFX.unlock();$('intro').hidden=true;openMatchBet()})})();
