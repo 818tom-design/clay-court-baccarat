@@ -46,6 +46,13 @@
   .side.on{transform:translateY(-2px) scale(1.02);box-shadow:0 0 0 3px var(--gold2),0 0 30px rgba(241,220,150,.45),0 10px 30px rgba(0,0,0,.4)}
   .side.on .chk{opacity:1;transform:scale(1)}
   .mb .tap{text-align:center;font-size:10px;letter-spacing:.26em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+  .sideswrap{position:relative}
+  .tip{position:absolute;left:50%;top:-14px;transform:translate(-50%,-100%) scale(.9);background:linear-gradient(180deg,#f1dc96,#c9a650);color:#2a1d05;font-weight:600;font-size:12px;letter-spacing:.04em;padding:9px 14px;border-radius:10px;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:2}
+  .tip::after{content:"";position:absolute;left:50%;bottom:-6px;width:12px;height:12px;background:#c9a650;transform:translateX(-50%) rotate(45deg)}
+  .tip.show{opacity:1;transform:translate(-50%,-100%) scale(1)}
+  .sides.shake{animation:shakeX .55s cubic-bezier(.36,.07,.19,.97)}
+  @keyframes shakeX{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-7px)}40%,60%{transform:translateX(7px)}}
+  @media (max-width:640px){.tip{font-size:11px;white-space:normal;text-align:center;width:min(300px,86vw)}}
   .amts{display:flex;gap:8px;justify-content:center;margin:16px 0 6px;flex-wrap:wrap}
   .amt{font-family:var(--sans);font-weight:600;font-size:13px;color:var(--ink);background:rgba(0,0,0,.3);border:1px solid rgba(212,178,94,.35);border-radius:30px;padding:9px 16px;cursor:pointer}
   .amt.on{background:linear-gradient(180deg,#f1dc96,#c9a650);color:#2a1d05;border-color:#f1dc96}
@@ -162,9 +169,12 @@
         <div class="q">WHO WINS THIS GAME?</div>
         <div class="note">Zero-margin match bet · pays <b>1 : 1</b>, no commission · minimum <b>50</b></div>
         <div class="tap">Tap the side you back</div>
-        <div class="sides" id="sides">
-          <div class="side p" data-s="P"><div class="chk">✓</div><div class="n">PLAYER</div><div class="d">Jumps left</div></div>
-          <div class="side b" data-s="B"><div class="chk">✓</div><div class="n">BANKER</div><div class="d">Jumps right</div></div>
+        <div class="sideswrap">
+          <div class="tip" id="mbTip">You must pick Player or Banker for the match bet</div>
+          <div class="sides" id="sides">
+            <div class="side p" data-s="P"><div class="chk">✓</div><div class="n">PLAYER</div><div class="d">Jumps left</div></div>
+            <div class="side b" data-s="B"><div class="chk">✓</div><div class="n">BANKER</div><div class="d">Jumps right</div></div>
+          </div>
         </div>
         <div class="amts" id="amts"><div class="amt" data-a="50">50</div><div class="amt on" data-a="100">100</div><div class="amt" data-a="250">250</div><div class="amt" data-a="500">500</div><div class="amt" data-a="1000">1,000</div></div>
         <div class="err" id="mbErr"></div>
@@ -728,13 +738,16 @@ $('play').addEventListener('click',serve);$('clear').addEventListener('click',cl
 window.addEventListener('keydown',e=>{if(e.key==='m'||e.key==='M')SFX.toggle();else if(e.key==='a'||e.key==='A')setAuto(!S.auto);else if(e.key==='ArrowLeft')place('player');else if(e.key==='ArrowRight')place('banker');else if(e.key==='ArrowUp')place('tie');else if(e.key===' '||e.key==='Enter'){e.preventDefault();serve()}});
 
 /* ---------- intro and match bet ---------- */
-let mbSide=null,mbAmt=100;
+let mbSide=null,mbAmt=100,mbIdle=null,mbTipT=null;
+function nudge(){const sd=$('sides');sd.classList.remove('shake');void sd.offsetWidth;sd.classList.add('shake');$('mbTip').classList.add('show');clearTimeout(mbTipT);mbTipT=setTimeout(()=>$('mbTip').classList.remove('show'),2600);
+  if(navigator.vibrate)try{navigator.vibrate([40,30,40])}catch(e){}SFX.net()}
 function openMatchBet(){S.phase='matchbet';const V=VENUES[MATCH.venue%VENUES.length];$('mbTitle').textContent='Game '+MATCH.game+' · '+V.name.charAt(0)+V.name.slice(1).toLowerCase();$('mbBal').textContent=fmt(S.balance);$('mbErr').textContent='';
-  mbSide=null;document.querySelectorAll('.side').forEach(el=>el.classList.remove('on'));$('sides').classList.remove('chosen');$('matchbet').hidden=false;syncUi()}
-document.querySelectorAll('.side').forEach(el=>el.addEventListener('click',()=>{mbSide=el.dataset.s;document.querySelectorAll('.side').forEach(s=>s.classList.toggle('on',s===el));$('sides').classList.add('chosen');$('mbErr').textContent='';SFX.chip()}));
+  mbSide=null;document.querySelectorAll('.side').forEach(el=>el.classList.remove('on'));$('sides').classList.remove('chosen');$('mbTip').classList.remove('show');$('matchbet').hidden=false;syncUi();
+  clearTimeout(mbIdle);mbIdle=setTimeout(()=>{if(!mbSide&&!$('matchbet').hidden)nudge()},4500)}
+document.querySelectorAll('.side').forEach(el=>el.addEventListener('click',()=>{mbSide=el.dataset.s;document.querySelectorAll('.side').forEach(s=>s.classList.toggle('on',s===el));$('sides').classList.add('chosen');$('mbErr').textContent='';$('mbTip').classList.remove('show');clearTimeout(mbIdle);SFX.chip()}));
 document.querySelectorAll('.amt').forEach(el=>el.addEventListener('click',()=>{mbAmt=+el.dataset.a;document.querySelectorAll('.amt').forEach(a=>a.classList.toggle('on',a===el));SFX.chip()}));
 $('mbGo').addEventListener('click',()=>{
-  if(!mbSide){$('mbErr').textContent='Pick Player or Banker first.';return}
+  if(!mbSide){$('mbErr').textContent='Pick Player or Banker first.';nudge();return}
   if(mbAmt<50){$('mbErr').textContent='Minimum match bet is 50.';return}
   if(mbAmt>S.balance){$('mbErr').textContent='Not enough balance for that match bet.';return}
   MATCH.side=mbSide;MATCH.amount=mbAmt;S.balance-=mbAmt;$('matchbet').hidden=true;S.phase='bet';S.hold=0;
