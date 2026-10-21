@@ -37,11 +37,15 @@
   .mb .note{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.06em;margin-bottom:16px}
   .mb .note b{color:var(--gold2);font-weight:600}
   .sides{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .side{border:1.5px solid;border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;transition:.15s;background:rgba(255,255,255,.03)}
-  .side.p{border-color:rgba(74,140,255,.75)}.side.b{border-color:rgba(232,80,78,.75)}
-  .side .n{font-family:var(--serif);font-weight:600;font-size:19px;letter-spacing:.24em;color:var(--gold2)}
-  .side .d{font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-top:4px}
-  .side.on{background:rgba(241,220,150,.12);box-shadow:0 0 0 2px rgba(241,220,150,.9),0 0 24px rgba(241,220,150,.35)}
+  .side{position:relative;border:1.5px solid;border-radius:14px;padding:20px 10px 16px;text-align:center;cursor:pointer;transition:.18s;box-shadow:0 8px 24px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.18)}
+  .side.p{background:linear-gradient(180deg,#3b7ff0,#1d4fb0);border-color:#7fb0ff}.side.b{background:linear-gradient(180deg,#e05050,#a62a2a);border-color:#ff9a9a}
+  .side .n{font-family:var(--serif);font-weight:600;font-size:20px;letter-spacing:.24em;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+  .side .d{font-size:10px;letter-spacing:.18em;color:rgba(255,255,255,.75);text-transform:uppercase;margin-top:4px}
+  .side .chk{position:absolute;top:8px;right:10px;width:22px;height:22px;border-radius:50%;background:var(--gold2);color:#2a1d05;font-weight:700;font-size:13px;line-height:22px;text-align:center;opacity:0;transform:scale(.6);transition:.18s}
+  .sides.chosen .side:not(.on){opacity:.38;filter:saturate(.6)}
+  .side.on{transform:translateY(-2px) scale(1.02);box-shadow:0 0 0 3px var(--gold2),0 0 30px rgba(241,220,150,.45),0 10px 30px rgba(0,0,0,.4)}
+  .side.on .chk{opacity:1;transform:scale(1)}
+  .mb .tap{text-align:center;font-size:10px;letter-spacing:.26em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
   .amts{display:flex;gap:8px;justify-content:center;margin:16px 0 6px;flex-wrap:wrap}
   .amt{font-family:var(--sans);font-weight:600;font-size:13px;color:var(--ink);background:rgba(0,0,0,.3);border:1px solid rgba(212,178,94,.35);border-radius:30px;padding:9px 16px;cursor:pointer}
   .amt.on{background:linear-gradient(180deg,#f1dc96,#c9a650);color:#2a1d05;border-color:#f1dc96}
@@ -57,18 +61,19 @@
   .table::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(45deg,rgba(255,255,255,.012) 0 2px,transparent 2px 4px)}
   .zones{display:grid;grid-template-columns:1fr 210px 1fr;gap:16px;align-items:end;position:relative;z-index:1}
   .zone{position:relative;height:124px;border:1.5px solid;cursor:pointer;display:flex;flex-direction:column;align-items:center;padding-top:22px;gap:3px;transition:background .15s,box-shadow .15s,transform .15s;box-shadow:inset 0 0 0 1px rgba(212,178,94,.16),0 8px 24px rgba(0,0,0,.25);user-select:none;-webkit-user-select:none;touch-action:manipulation}
-  .zone.player{border-color:rgba(74,140,255,.75);background:rgba(74,140,255,.10);border-radius:78px 16px 16px 78px}
-  .zone.banker{border-color:rgba(232,80,78,.75);background:rgba(232,80,78,.10);border-radius:16px 78px 78px 16px}
-  .zone.tie{height:100px;border-color:rgba(60,199,125,.75);background:rgba(60,199,125,.10);border-radius:16px 16px 56px 56px;padding-top:16px}
-  @media (hover:hover){.zone:hover{background-color:rgba(255,255,255,.08);transform:translateY(-1px)}}
+  .zone.player{border-color:#6ea0ff;background:linear-gradient(180deg,rgba(59,127,240,.55),rgba(29,79,176,.45));border-radius:78px 16px 16px 78px}
+  .zone.banker{border-color:#ff8f8f;background:linear-gradient(180deg,rgba(224,80,80,.55),rgba(166,42,42,.45));border-radius:16px 78px 78px 16px}
+  .zone.tie{height:100px;border-color:#7fe3ad;background:linear-gradient(180deg,rgba(60,199,125,.45),rgba(22,120,70,.4));border-radius:16px 16px 56px 56px;padding-top:16px}
+  @media (hover:hover){.zone:hover{filter:brightness(1.15);transform:translateY(-1px)}}
   .zone:active{transform:scale(.985)}
   .zone.on{box-shadow:inset 0 0 0 1px rgba(212,178,94,.16),0 0 0 2px rgba(241,220,150,.9),0 0 24px rgba(241,220,150,.35)}
-  .zone .name{font-family:var(--serif);font-weight:600;font-size:21px;letter-spacing:.26em;color:var(--gold2);text-shadow:0 1px 0 rgba(0,0,0,.6)}
+  .zone .name{font-family:var(--serif);font-weight:600;font-size:21px;letter-spacing:.26em;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)}
   .zone.tie .name{font-size:17px}
-  .zone .pays{font-size:10px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
-  .zone .hint{position:absolute;top:8px;font-size:9px;letter-spacing:.24em;color:rgba(255,255,255,.45);text-transform:uppercase}
+  .zone .pays{font-size:10px;letter-spacing:.22em;color:rgba(255,255,255,.8);text-transform:uppercase}
+  .zone .hint{position:absolute;top:8px;font-size:9px;letter-spacing:.24em;color:rgba(255,255,255,.6);text-transform:uppercase}
   .zone .pick{position:absolute;top:-11px;left:50%;transform:translateX(-50%);display:none;font-family:var(--serif);font-weight:600;font-size:9px;letter-spacing:.22em;color:#2a1d05;background:linear-gradient(180deg,#f1dc96,#c9a650);padding:4px 12px;border-radius:20px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.4)}
   .zone.picked .pick{display:block}
+  .zone.picked .hint{display:none}
   .zone.picked{border-color:rgba(241,220,150,.9)}
   .stack{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:none;align-items:center;justify-content:center;width:60px;height:52px}
   .zone.on .stack{display:flex}
@@ -90,6 +95,10 @@
   .btn:active{transform:scale(.97)}
   .btn:disabled{opacity:.35;cursor:default;background:transparent;transform:none}
   .btn.serve{background:linear-gradient(180deg,#f1dc96,#c9a650);color:#2a1d05;border-color:#f1dc96;padding:13px 30px;font-size:13px;box-shadow:0 6px 18px rgba(212,178,94,.35)}
+  .btn.auto{position:relative;padding-left:30px}
+  .btn.auto::before{content:"";position:absolute;left:12px;top:50%;width:9px;height:9px;margin-top:-5px;border-radius:50%;border:1.5px solid rgba(212,178,94,.6)}
+  .btn.auto.on{background:rgba(241,220,150,.16);border-color:var(--gold2)}
+  .btn.auto.on::before{background:#3cc77d;border-color:#3cc77d;box-shadow:0 0 8px #3cc77d}
   .msg{margin-top:12px;text-align:center;font-size:12px;color:var(--muted);letter-spacing:.04em;min-height:16px;position:relative;z-index:1}
 
   .roads{display:grid;grid-template-columns:1fr 250px;gap:16px;margin-top:16px}
@@ -155,9 +164,10 @@
         <h2 id="mbTitle">Game 1 · Paris</h2>
         <div class="q">WHO WINS THIS GAME?</div>
         <div class="note">Zero-margin match bet · pays <b>1 : 1</b>, no commission · minimum <b>50</b></div>
-        <div class="sides">
-          <div class="side p" data-s="P"><div class="n">PLAYER</div><div class="d">Jumps left</div></div>
-          <div class="side b" data-s="B"><div class="n">BANKER</div><div class="d">Jumps right</div></div>
+        <div class="tap">Tap the side you back</div>
+        <div class="sides" id="sides">
+          <div class="side p" data-s="P"><div class="chk">✓</div><div class="n">PLAYER</div><div class="d">Jumps left</div></div>
+          <div class="side b" data-s="B"><div class="chk">✓</div><div class="n">BANKER</div><div class="d">Jumps right</div></div>
         </div>
         <div class="amts" id="amts"><div class="amt" data-a="50">50</div><div class="amt on" data-a="100">100</div><div class="amt" data-a="250">250</div><div class="amt" data-a="500">500</div><div class="amt" data-a="1000">1,000</div></div>
         <div class="err" id="mbErr"></div>
@@ -187,7 +197,7 @@
         </div>
         <div class="actions">
           <button class="btn" id="clear">Clear</button>
-          <button class="btn" id="rebet">Rebet</button>
+          <button class="btn auto" id="auto">Autoplay</button>
           <button class="btn serve" id="play">Serve</button>
         </div>
       </div>
@@ -368,7 +378,7 @@ const VENUES=[
   {name:'LONDON',open:'WIMBLEDON',court:['#2f6b2a','#3f8a36','#4c9c40'],inner:'rgba(200,255,160,.10)',outer:'rgba(20,60,15,.28)',stand:['#2a2a3a','#171722'],line:'#f6f6f0'}];
 const MATCH={side:null,amount:0,pts:{P:0,B:0},games:{P:0,B:0},game:1,venue:0,pending:null};
 const S={balance:1000,chip:25,bets:{player:0,banker:0,tie:0},last:null,lastWin:null,phase:'intro',hist:[],hand:null,handNo:0,wins:{P:0,B:0},pace:1,
-  ball:{u:0,v:1,z:0,vis:false},trail:[],me:{u:0,tilt:0,target:0},opp:{u:0,target:0},segs:[],seg:0,t:0,reveal:0,banner:null,hold:0,hover:null,event:'',meKnock:null,oppKnock:null,shake:0};
+  ball:{u:0,v:1,z:0,vis:false},trail:[],me:{u:0,tilt:0,target:0},opp:{u:0,target:0},segs:[],seg:0,t:0,reveal:0,banner:null,hold:0,hover:null,event:'',meKnock:null,oppKnock:null,shake:0,auto:false,autoTimer:null};
 const fmt=n=>n.toLocaleString('en-US');
 
 /* ---------- layout + projection ---------- */
@@ -615,7 +625,7 @@ function scoreLabel(){const p=MATCH.pts.P,b=MATCH.pts.B;
   return{P:TP[Math.min(p,3)],B:TP[Math.min(b,3)],state:(p===3&&b<3)?'GAME POINT PLAYER':(b===3&&p<3)?'GAME POINT BANKER':''}}
 function addPoint(o){MATCH.pts[o]++;const p=MATCH.pts.P,b=MATCH.pts.B;if((p>=4||b>=4)&&Math.abs(p-b)>=2){MATCH.pending=p>b?'P':'B';return 'GAME'}return scoreLabel().state}
 function gameOver(){
-  const w=MATCH.pending,won=MATCH.side===w,amt=MATCH.amount;MATCH.games[w]++;S.phase='gameover';S.hold=0;S.ball.vis=false;S.trail=[];S.me.target=0;S.opp.target=0;
+  const w=MATCH.pending,won=MATCH.side===w,amt=MATCH.amount;MATCH.games[w]++;S.phase='gameover';S.hold=0;S.ball.vis=false;S.trail=[];S.me.target=0;S.opp.target=0;S.auto=false;S.autoTimer=null;
   if(won){S.balance=Math.round((S.balance+amt*2)*100)/100;S.lastWin=amt*2}
   S.banner={t:'GAME · '+(w==='P'?'PLAYER':'BANKER'),c:w==='P'?'#8db4ff':'#ff9b9a',s:won?'MATCH BET WON  '+fmt(amt*2):'MATCH BET LOST',pulse:true};
   setMsg(won?'You called it. Match bet pays '+fmt(amt*2)+'.':'Match bet lost. New game, new venue.');
@@ -652,9 +662,12 @@ function step(now){
       else{S.phase='bet';S.ball.vis=false;S.trail=[];S.me.target=0;S.opp.target=0;S.hold=0;
         if(S.event==='TIE-BREAK'){S.banner={t:'TIE-BREAK',c:'#f1dc96',s:'DEUCE · 40-40 · TWO CLEAR POINTS WIN',pulse:true};SFX.ooh(1)}
         else if(S.event&&S.event.startsWith('ADVANTAGE')){S.banner={t:S.event,c:'#f1dc96',s:'GAME POINT',pulse:true}}
+        const laid=restake();if(laid&&!S.auto)setMsg('Same stake is on the table. Press Serve, or Clear to change it.');
+        if(S.auto){if(laid)S.autoTimer=1.1;else setAuto(false)}
         syncUi()}}}
   else if(S.phase==='gameover'){S.hold+=dt;if(S.hold>4.2)nextGame()}
-  else{S.hold+=dt;if(S.hold>4)S.banner=null}
+  else{S.hold+=dt;if(S.hold>4)S.banner=null;
+    if(S.phase==='bet'&&S.auto&&S.autoTimer!=null){S.autoTimer-=dt;if(S.autoTimer<=0){S.autoTimer=null;serve()}}}
   const k=1-Math.pow(0.0005,dt);S.me.u+=(S.me.target-S.me.u)*k;S.me.tilt=S.me.u*0.9;S.opp.u+=(S.opp.target-S.opp.u)*k;
   if(S.meKnock!=null){S.meKnock=Math.min(1,S.meKnock+dt/0.9)}if(S.oppKnock!=null){S.oppKnock=Math.min(1,S.oppKnock+dt/1.1)}if(S.shake>0)S.shake=Math.max(0,S.shake-dt);
   drawScene();requestAnimationFrame(step);
@@ -700,8 +713,16 @@ function syncUi(){
   document.querySelectorAll('.zone').forEach(el=>{el.classList.toggle('on',S.bets[el.dataset.b]>0);el.classList.toggle('picked',(MATCH.side==='P'&&el.dataset.b==='player')||(MATCH.side==='B'&&el.dataset.b==='banker'))});
   document.querySelectorAll('.zone .pick').forEach(el=>{el.textContent='YOUR PICK · '+fmt(MATCH.amount)});
   stack($('stP'),S.bets.player);stack($('stB'),S.bets.banker);stack($('stT'),S.bets.tie);
-  const betting=S.phase==='bet';$('play').disabled=!betting;$('clear').disabled=!betting;$('rebet').disabled=!betting||!S.last;
+  const betting=S.phase==='bet';$('play').disabled=!betting;$('clear').disabled=!betting;
+  $('auto').classList.toggle('on',S.auto);$('auto').textContent=S.auto?'Autoplay on':'Autoplay';
 }
+/* the stake from the last point is laid again on the same spot, so each point is just Serve */
+function restake(){if(!S.last)return false;const tot=S.last.player+S.last.banker+S.last.tie;if(tot<=0)return false;
+  if(S.balance<tot){setMsg('Not enough balance to lay the same stake again.');return false}
+  S.bets={...S.last};S.balance-=tot;return true}
+function setAuto(on){S.auto=on;S.autoTimer=null;syncUi();
+  if(on){setMsg('Autoplay on: same stake, same spot, point after point until the game is decided.');if(S.phase==='bet'){if(S.bets.player+S.bets.banker+S.bets.tie>0)S.autoTimer=0.5;else{S.auto=false;syncUi();setMsg('Place a stake first, then turn on autoplay.')}}}
+  else setMsg('Autoplay off.')}
 function place(kind){
   if(S.phase!=='bet')return;const amt=S.chip;if(S.balance<amt){setMsg('Not enough balance for that chip.');return}
   if(kind==='player'&&S.bets.banker){S.balance+=S.bets.banker;S.bets.banker=0}
@@ -710,8 +731,7 @@ function place(kind){
   setMsg(kind==='tie'?'Tie side bet placed. Add a side or serve as is.':(kind==='player'?'Jumping left · Player.':'Jumping right · Banker.')+' Press Serve.');
   syncUi();
 }
-function clearBets(){if(S.phase!=='bet')return;if(S.bets.player+S.bets.banker+S.bets.tie>0)SFX.chip();S.balance+=S.bets.player+S.bets.banker+S.bets.tie;S.bets={player:0,banker:0,tie:0};syncUi()}
-function rebet(){if(S.phase!=='bet'||!S.last)return;clearBets();const tot=S.last.player+S.last.banker+S.last.tie;if(tot>S.balance){setMsg('Not enough balance to repeat that bet.');return}S.bets={...S.last};S.balance-=tot;syncUi()}
+function clearBets(){if(S.phase!=='bet')return;if(S.bets.player+S.bets.banker+S.bets.tie>0)SFX.chip();S.balance+=S.bets.player+S.bets.banker+S.bets.tie;S.bets={player:0,banker:0,tie:0};S.last=null;if(S.auto)setAuto(false);syncUi()}
 
 function courtHit(cx,cy){const r=cv.getBoundingClientRect();const x=(cx-r.left)/r.width*W,y=(cy-r.top)/r.height*H;
   let lo=0,hi=1;for(let i=0;i<24;i++){const m=(lo+hi)/2;if(proj(0,m,0).y>y)lo=m;else hi=m}
@@ -729,14 +749,14 @@ cv.addEventListener('click',e=>{
 });
 document.querySelectorAll('.zone').forEach(el=>el.addEventListener('click',()=>place(el.dataset.b)));
 document.querySelectorAll('#chips .chip').forEach(el=>el.addEventListener('click',()=>{S.chip=+el.dataset.v;document.querySelectorAll('#chips .chip').forEach(c=>c.classList.toggle('sel',c===el))}));
-$('play').addEventListener('click',serve);$('clear').addEventListener('click',clearBets);$('rebet').addEventListener('click',rebet);
-window.addEventListener('keydown',e=>{if(e.key==='m'||e.key==='M')SFX.toggle();else if(e.key==='ArrowLeft')place('player');else if(e.key==='ArrowRight')place('banker');else if(e.key==='ArrowUp')place('tie');else if(e.key===' '||e.key==='Enter'){e.preventDefault();serve()}});
+$('play').addEventListener('click',serve);$('clear').addEventListener('click',clearBets);$('auto').addEventListener('click',()=>setAuto(!S.auto));
+window.addEventListener('keydown',e=>{if(e.key==='m'||e.key==='M')SFX.toggle();else if(e.key==='a'||e.key==='A')setAuto(!S.auto);else if(e.key==='ArrowLeft')place('player');else if(e.key==='ArrowRight')place('banker');else if(e.key==='ArrowUp')place('tie');else if(e.key===' '||e.key==='Enter'){e.preventDefault();serve()}});
 
 /* ---------- intro and match bet ---------- */
 let mbSide=null,mbAmt=100;
 function openMatchBet(){S.phase='matchbet';const V=VENUES[MATCH.venue%VENUES.length];$('mbTitle').textContent='Game '+MATCH.game+' · '+V.name.charAt(0)+V.name.slice(1).toLowerCase();$('mbBal').textContent=fmt(S.balance);$('mbErr').textContent='';
-  mbSide=null;document.querySelectorAll('.side').forEach(el=>el.classList.remove('on'));$('matchbet').hidden=false;syncUi()}
-document.querySelectorAll('.side').forEach(el=>el.addEventListener('click',()=>{mbSide=el.dataset.s;document.querySelectorAll('.side').forEach(s=>s.classList.toggle('on',s===el));$('mbErr').textContent='';SFX.chip()}));
+  mbSide=null;document.querySelectorAll('.side').forEach(el=>el.classList.remove('on'));$('sides').classList.remove('chosen');$('matchbet').hidden=false;syncUi()}
+document.querySelectorAll('.side').forEach(el=>el.addEventListener('click',()=>{mbSide=el.dataset.s;document.querySelectorAll('.side').forEach(s=>s.classList.toggle('on',s===el));$('sides').classList.add('chosen');$('mbErr').textContent='';SFX.chip()}));
 document.querySelectorAll('.amt').forEach(el=>el.addEventListener('click',()=>{mbAmt=+el.dataset.a;document.querySelectorAll('.amt').forEach(a=>a.classList.toggle('on',a===el));SFX.chip()}));
 $('mbGo').addEventListener('click',()=>{
   if(!mbSide){$('mbErr').textContent='Pick Player or Banker first.';return}
