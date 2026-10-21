@@ -101,10 +101,8 @@
   .btn.auto.on::before{background:#3cc77d;border-color:#3cc77d;box-shadow:0 0 8px #3cc77d}
   .msg{margin-top:12px;text-align:center;font-size:12px;color:var(--muted);letter-spacing:.04em;min-height:16px;position:relative;z-index:1}
 
-  .roads{display:grid;grid-template-columns:1fr 250px;gap:16px;margin-top:16px}
   .panel{background:rgba(7,11,24,.8);border:1px solid rgba(212,178,94,.3);border-radius:14px;padding:12px 14px;min-width:0}
   .panel h4{margin:0 0 8px;font-family:var(--serif);font-weight:600;font-size:10px;letter-spacing:.28em;color:var(--gold);text-transform:uppercase}
-  .roads canvas{width:100%;height:124px;display:block;border-radius:8px}
   .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
   .stat{border-radius:10px;padding:10px 8px;text-align:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
   .stat .n{font-size:22px;font-weight:600}
@@ -205,27 +203,12 @@
     </div>
   </div>
 
-  <div class="roads">
-    <div class="panel"><h4>Roads</h4><canvas id="roads"></canvas></div>
-    <div class="panel"><h4>Shoe statistics</h4>
-      <div class="stats">
-        <div class="stat p"><div class="n" id="sP">0</div><div class="l">Player</div></div>
-        <div class="stat b"><div class="n" id="sB">0</div><div class="l">Banker</div></div>
-        <div class="stat t"><div class="n" id="sT">0</div><div class="l">Tie</div></div>
-      </div>
-      <div class="shoe">8 decks · <b>continuous shuffle</b> · cards return after every hand</div>
-    </div>
-  </div>
-
-  <div class="foot">Powered by Baccarat</div>
-  <div class="fine">True random number generator engine · Punto banco drawing rules · Player 1:1 · Banker 0.95:1 · Tie 8:1 · Left or right pushes on a tie</div>
 </div>
 
 <script>
 (function(){
 'use strict';
 const stage=document.getElementById('stage'),cv=document.getElementById('court'),g=cv.getContext('2d');
-const rc=document.getElementById('roads'),rg=rc.getContext('2d');
 const $=id=>document.getElementById(id);
 const SERIF='"Cinzel",Georgia,serif',SANS='"Inter","Segoe UI",system-ui,sans-serif';
 const hasLS='letterSpacing' in g;
@@ -317,9 +300,17 @@ const SFX=(()=>{
       tone(t,{f:210*p,f2:70,type:'sine',a:0.002,dec:0.09,gain:0.6});
       noise(t,{type:'bandpass',f:1400,q:0.8,a:0.002,dec:0.05,gain:0.5});
       noise(t,{type:'highpass',f:3000,a:0.001,dec:0.02,gain:0.25})},
-    smash(){if(!ready())return;const t=now();
-      tone(t,{f:160,f2:40,type:'sine',a:0.002,dec:0.22,gain:0.9});tone(t,{f:55,f2:30,type:'triangle',a:0.004,dec:0.35,gain:0.5});
-      noise(t,{type:'bandpass',f:900,q:0.6,a:0.002,dec:0.12,gain:0.7});noise(t,{type:'lowpass',f:400,a:0.003,dec:0.3,gain:0.5});noise(t+0.02,{type:'highpass',f:2500,a:0.001,dec:0.05,gain:0.3})},
+    smashWin(){if(!ready())return;const t=now();
+      /* the big one: deep boom, crack, and a short triumphant rise */
+      tone(t,{f:170,f2:34,type:'sine',a:0.002,dec:0.32,gain:1.0});tone(t,{f:50,f2:26,type:'triangle',a:0.004,dec:0.55,gain:0.6});
+      noise(t,{type:'lowpass',f:320,a:0.003,dec:0.5,gain:0.8});noise(t,{type:'bandpass',f:1100,q:0.7,a:0.002,dec:0.1,gain:0.6});noise(t+0.01,{type:'highpass',f:3000,a:0.001,dec:0.06,gain:0.4});
+      tone(t+0.08,{f:330,f2:990,type:'sine',a:0.04,dec:0.45,gain:0.14});tone(t+0.08,{f:660,f2:1980,type:'sine',a:0.04,dec:0.3,gain:0.05})},
+    smashLose(){if(!ready())return;const t=now();
+      /* a small thud, then the wind of the ball flying past */
+      tone(t,{f:130,f2:45,type:'sine',a:0.002,dec:0.16,gain:0.45});noise(t,{type:'lowpass',f:500,a:0.003,dec:0.22,gain:0.35});
+      const src=ctx.createBufferSource();src.buffer=noiseBuf;src.loop=true;src.playbackRate.value=1.3;const flt=ctx.createBiquadFilter();flt.type='bandpass';flt.Q.value=1.0;
+      flt.frequency.setValueAtTime(300,t+0.06);flt.frequency.exponentialRampToValueAtTime(2200,t+0.3);flt.frequency.exponentialRampToValueAtTime(380,t+0.95);
+      const gn=ctx.createGain();gn.gain.setValueAtTime(0.0001,t+0.06);gn.gain.linearRampToValueAtTime(0.28,t+0.3);gn.gain.exponentialRampToValueAtTime(0.0001,t+1.0);src.connect(flt);flt.connect(gn);gn.connect(master);src.start(t+0.06);src.stop(t+1.1)},
     bounce(){if(!ready())return;const t=now();tone(t,{f:150,f2:70,a:0.002,dec:0.07,gain:0.35});noise(t,{type:'lowpass',f:900,a:0.002,dec:0.05,gain:0.3})},
     whoosh(){if(!ready())return;const t=now();noise(t,{type:'bandpass',f:500,f2:2400,q:1.5,a:0.12,dec:0.18,gain:0.12})},
     net(){if(!ready())return;const t=now();tone(t,{f:110,f2:60,type:'triangle',a:0.002,dec:0.12,gain:0.4});noise(t,{type:'lowpass',f:600,a:0.002,dec:0.18,gain:0.45});
@@ -400,6 +391,7 @@ function layout(){
   L.cd={w:M?Math.min(160,W-L.sb.w-24):250,h:M?88:120};L.cd.x=W-L.cd.w-(M?8:64);L.cd.y=L.sb.y;
   L.pace={x:M?8:64,y:H-(M?36:54),w:M?150:176,h:M?26:30};
   L.prompt={y:H-(M?36:54),w:M?170:220,h:M?26:30};
+  L.road={x:M?8:64,w:W-2*(M?8:64),h:M?30:36};L.road.y=L.pace.y-L.road.h-(M?6:8);
   paintBackdrop();
 }
 function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
@@ -538,6 +530,18 @@ function drawHud(){
       text(g,String(tot(S.hand.B)),tx,y2+chh/2,'700 18px '+SANS,hot&&S.hand.outcome==='B'?'#f1dc96':'#f4efe3','right')}
   }else text(g,M?'8 decks':'8 decks · continuous shuffle',cd.x+cd.w-12,y2+chh/2,'500 9px '+SANS,'#9fb0a7','right','.06em');
 
+  /* road strip: the last results as a row of beads, newest on the right */
+  const rd=L.road;panel(rd.x,rd.y,rd.w,rd.h,rd.h/2);
+  const cnt={P:0,B:0,T:0};S.hist.forEach(o=>cnt[o]++);
+  text(g,'ROAD',rd.x+14,rd.y+rd.h/2,'600 '+(M?8:9)+'px '+SERIF,'#f1dc96','left','.2em');
+  const cx0=rd.x+(M?52:66);let cxp=cx0;
+  for(const [k,col] of [['P','#4a8cff'],['B','#e8504e'],['T','#3cc77d']]){g.fillStyle=col;g.beginPath();g.arc(cxp,rd.y+rd.h/2,3,0,6.3);g.fill();text(g,String(cnt[k]),cxp+6,rd.y+rd.h/2+.5,'600 '+(M?9:10)+'px '+SANS,'#f4efe3','left');cxp+=M?24:30}
+  const r=rd.h*0.3,sp=r*2.5,x0=cxp+8,x1=rd.x+rd.w-12,n=Math.max(0,Math.floor((x1-x0)/sp));
+  if(n>0){const h=S.hist.slice(-n);g.fillStyle='rgba(255,255,255,.06)';rr(g,x0-4,rd.y+5,x1-x0+8,rd.h-10,(rd.h-10)/2);g.fill();
+    h.forEach((o,i)=>{const x=x1-(h.length-1-i)*sp-r;g.fillStyle=o==='P'?'#4a8cff':o==='B'?'#e8504e':'#3cc77d';g.beginPath();g.arc(x,rd.y+rd.h/2,r,0,6.3);g.fill();
+      if(r>=6)text(g,o,x,rd.y+rd.h/2+.5,'700 '+Math.round(r*1.1)+'px '+SANS,'#fff','center')});
+    if(h.length&&S.phase==='result'){const x=x1-r;g.strokeStyle='#f1dc96';g.lineWidth=1.5;g.beginPath();g.arc(x,rd.y+rd.h/2,r+2.5,0,6.3);g.stroke()}}
+
   /* pace */
   const pc=L.pace;panel(pc.x,pc.y,pc.w,pc.h,pc.h/2);
   text(g,'MATCH PACE',pc.x+pc.w*0.32,pc.y+pc.h/2,'600 '+(9*fs)+'px '+SERIF,'#f1dc96','center','.18em');
@@ -614,7 +618,7 @@ function resolve(){
   const ev=o==='T'?'LET · POINT REPLAYED':addPoint(o);
   if(ev==='GAME')S.banner.s2='GAME POINT WON';else if(ev)S.banner.s2=ev;
   S.event=ev;
-  S.bets={player:0,banker:0,tie:0};S.phase='result';S.hold=0;syncUi();drawRoads();
+  S.bets={player:0,banker:0,tie:0};S.phase='result';S.hold=0;syncUi();
   SFX.crowdOff();if(pay>0){SFX.cheer();SFX.win()}else if(returned>0){SFX.applause();SFX.tie()}else SFX.groan();
 }
 
@@ -653,8 +657,8 @@ function step(now){
       if(sg.miss)S.ball.vis=t<0.95;
       trailT+=dt;if(trailT>(sg.power||sg.smash?0.015:0.03)){trailT=0;const bp=proj(S.ball.u,S.ball.v,S.ball.z);S.trail.push({x:bp.x,y:bp.y,r:6*bp.s+1.5});if(S.trail.length>(sg.power||sg.smash?12:7))S.trail.shift()}
       if(t>=1){if(sg.to.net)SFX.net();
-        if(sg.knockMe){S.meKnock=0;S.shake=0.45;SFX.smash()}
-        if(sg.smash){S.oppKnock=0;S.shake=0.55;S.ball.vis=false;SFX.smash();SFX.ooh(1.2)}
+        if(sg.knockMe){S.meKnock=0;S.shake=0.4;SFX.smashLose()}
+        if(sg.smash){S.oppKnock=0;S.shake=0.6;S.ball.vis=false;SFX.smashWin();SFX.ooh(1.2)}
         S.seg++;S.t=0;if(S.seg>=S.segs.length){S.reveal=S.hand.order.length;resolve()}}
     }
   }else if(S.phase==='result'){S.hold+=dt;if(S.hold>2.4){
@@ -671,38 +675,6 @@ function step(now){
   const k=1-Math.pow(0.0005,dt);S.me.u+=(S.me.target-S.me.u)*k;S.me.tilt=S.me.u*0.9;S.opp.u+=(S.opp.target-S.opp.u)*k;
   if(S.meKnock!=null){S.meKnock=Math.min(1,S.meKnock+dt/0.9)}if(S.oppKnock!=null){S.oppKnock=Math.min(1,S.oppKnock+dt/1.1)}if(S.shake>0)S.shake=Math.max(0,S.shake-dt);
   drawScene();requestAnimationFrame(step);
-}
-
-/* ---------- roads ---------- */
-function bigRoad(hist){
-  const cells=new Map();let last=null,startCol=-1,pos=null,maxCol=0,firstTies=0;
-  for(const r of hist){
-    if(r==='T'){if(pos)cells.get(pos.c+','+pos.r).ties++;else firstTies++;continue}
-    if(last===r){let c=pos.c,rr2=pos.r+1;if(rr2>5||cells.has(c+','+rr2)){c=pos.c+1;rr2=pos.r}pos={c,r:rr2}}
-    else{startCol++;let c=startCol;while(cells.has(c+',0'))c++;startCol=c;pos={c,r:0};last=r}
-    cells.set(pos.c+','+pos.r,{w:r,ties:0});maxCol=Math.max(maxCol,pos.c);
-  }
-  return{cells,maxCol,firstTies};
-}
-function drawRoads(){
-  const cw=Math.max(200,rc.clientWidth||600),ch=rc.clientHeight||124;
-  if(rc.width!==Math.round(cw*DPR)||rc.height!==Math.round(ch*DPR)){rc.width=Math.round(cw*DPR);rc.height=Math.round(ch*DPR)}
-  rg.setTransform(DPR,0,0,DPR,0,0);rg.clearRect(0,0,cw,ch);
-  const rows=6,top=16,cell=Math.floor((ch-top-2)/rows);
-  const col=o=>o==='P'?'#4a8cff':o==='B'?'#e8504e':'#3cc77d';
-  function board(x0,cols,label){rg.fillStyle='rgba(255,255,255,.03)';rg.fillRect(x0,top,cols*cell,rows*cell);rg.strokeStyle='rgba(255,255,255,.07)';rg.lineWidth=1;
-    for(let c=0;c<=cols;c++){rg.beginPath();rg.moveTo(x0+c*cell+.5,top);rg.lineTo(x0+c*cell+.5,top+rows*cell);rg.stroke()}for(let r=0;r<=rows;r++){rg.beginPath();rg.moveTo(x0,top+r*cell+.5);rg.lineTo(x0+cols*cell,top+r*cell+.5);rg.stroke()}
-    rg.font='600 8px '+SERIF;rg.fillStyle='#d4b25e';rg.textBaseline='middle';rg.textAlign='left';if(hasLS)rg.letterSpacing='.24em';rg.fillText(label,x0,7);if(hasLS)rg.letterSpacing='0px'}
-  const h=S.hist,gap=14;
-  const bcols=Math.max(4,Math.floor((cw-gap)*0.36/cell)),bx=2;board(bx,bcols,'BEAD ROAD');
-  const bstart=Math.max(0,Math.ceil(h.length/rows)-bcols)*rows,rad=cell*0.37;
-  for(let i=bstart;i<h.length;i++){const j=i-bstart,c=Math.floor(j/rows),r=j%rows,x=bx+c*cell+cell/2,y=top+r*cell+cell/2;rg.fillStyle=col(h[i]);rg.beginPath();rg.arc(x,y,rad,0,6.3);rg.fill();rg.fillStyle='#fff';rg.font='700 '+Math.round(cell*0.45)+'px '+SANS;rg.textAlign='center';rg.textBaseline='middle';rg.fillText(h[i],x,y+.5)}
-  const gx=bx+bcols*cell+gap,gcols=Math.max(4,Math.floor((cw-gx-2)/cell));board(gx,gcols,'BIG ROAD');
-  const br=bigRoad(h),off=Math.max(0,br.maxCol-gcols+1);
-  for(const [k,v] of br.cells){const [c,r]=k.split(',').map(Number);if(c-off<0)continue;const x=gx+(c-off)*cell+cell/2,y=top+r*cell+cell/2;rg.strokeStyle=col(v.w);rg.lineWidth=2.4;rg.beginPath();rg.arc(x,y,rad*0.9,0,6.3);rg.stroke();
-    if(v.ties){rg.strokeStyle='#3cc77d';rg.lineWidth=2;rg.beginPath();rg.moveTo(x-rad,y+rad);rg.lineTo(x+rad,y-rad);rg.stroke();if(v.ties>1){rg.fillStyle='#3cc77d';rg.font='700 8px '+SANS;rg.textAlign='center';rg.fillText(v.ties,x+rad+1,y-rad)}}}
-  if(br.firstTies&&br.cells.size===0){rg.strokeStyle='#3cc77d';rg.lineWidth=2;rg.beginPath();rg.moveTo(gx+3,top+cell-3);rg.lineTo(gx+cell-3,top+3);rg.stroke()}
-  const cnt={P:0,B:0,T:0};h.forEach(o=>cnt[o]++);$('sP').textContent=cnt.P;$('sB').textContent=cnt.B;$('sT').textContent=cnt.T;
 }
 
 /* ---------- ui ---------- */
@@ -769,11 +741,11 @@ $('mbGo').addEventListener('click',()=>{
 (function intro(){const bar=$('introBar');setTimeout(()=>{bar.style.width='100%'},80);setTimeout(()=>{$('introBox').classList.add('ready')},2300);
   $('enter').addEventListener('click',()=>{SFX.unlock();$('intro').hidden=true;openMatchBet()})})();
 
-let rsT=null;function onResize(){clearTimeout(rsT);rsT=setTimeout(()=>{layout();drawRoads()},120)}
+let rsT=null;function onResize(){clearTimeout(rsT);rsT=setTimeout(()=>{layout()},120)}
 window.addEventListener('resize',onResize);window.addEventListener('orientationchange',onResize);
-if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{layout();drawRoads()});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{layout()});
 
-layout();syncUi();drawRoads();requestAnimationFrame(step);
+layout();syncUi();requestAnimationFrame(step);
 })();
 </script>
 </body>
